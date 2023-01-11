@@ -93,3 +93,4 @@ autodoc_default_options = {
     "inherited-members": True,
     "show-inheritance": True,
 }
+numpydoc_show_class_members = False
