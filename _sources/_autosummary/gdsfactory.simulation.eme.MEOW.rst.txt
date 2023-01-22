@@ -1,0 +1,35 @@
+﻿gdsfactory.simulation.eme.MEOW
+==============================
+
+.. currentmodule:: gdsfactory.simulation.eme
+
+.. autoclass:: MEOW
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MEOW.__init__
+      ~MEOW.add_global_layers
+      ~MEOW.compute_all_modes
+      ~MEOW.compute_mode
+      ~MEOW.compute_sparameters
+      ~MEOW.create_cells
+      ~MEOW.get_port_map
+      ~MEOW.gf_material_to_meow_material
+      ~MEOW.layerstack_to_extrusion
+      ~MEOW.plot_Sparams
+      ~MEOW.plot_cross_section
+      ~MEOW.plot_mode
+      ~MEOW.plot_structure
+      ~MEOW.validate_component
+   
+   
+
+   
+   
+   

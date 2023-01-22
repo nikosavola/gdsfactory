@@ -1,0 +1,2176 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Finite-element mode solver &#8212; gdsfactory 6.23.4 documentation</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/autodoc_pydantic.css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Tidy3D mode solver" href="../tidy3d/01_tidy3d_modes.html" />
+    <link rel="prev" title="Plugins: Mode solvers" href="../../../plugins_mode_solver.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../../../index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="../../../_static/logo.png" class="logo" alt="logo">
+      
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../README.html">
+   gdsfactory 6.23.4
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../git.html">
+   Installation
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../_2_install.html">
+     Install gdsfactory
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../_2_klayout.html">
+     KLayout integration
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../_3_vscode.html">
+     VScode, PyCharm, Spyder, JupyterLab integration
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../_4_gdsfactory_in_5minutes.html">
+     gdsfactory in 5 minutes
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../_0_python.html">
+     Python intro
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../_1_git.html">
+     Git: Version control intro
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../workflow.html">
+   Workflow
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../notebooks.html">
+   Layout tutorial
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../00_geometry.html">
+     Component
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../01_references.html">
+     References and ports
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../02_movement.html">
+     Movement
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../03_cells_autoname_and_cache.html">
+     Cell
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../03_layer_stack.html">
+     Generic_tech
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../03_waveguides_paths_crossections.html">
+     Path and CrossSection
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../04_components_.html">
+     Components
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../04_components_hierarchy.html">
+     Components with hierarchy
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../08_pdk.html">
+     PDK
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../09_pdk_import.html">
+     Import PDK
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../07_mask.html">
+     Reticle assembly
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../04_routing.html">
+     Routing optical and RF ports
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../041_routing_electrical.html">
+     Routing electrical
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../common_mistakes.html">
+     Common mistakes
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../sdl.html">
+   Schematic Driven Layout
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../20_schematic_driven_layout.html">
+     Schematic Driven layout
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../10_yaml_component.html">
+     YAML Place and AutoRoute
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../11_get_netlist.html">
+     Netlist extractor
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../plugins_optimization.html">
+   Plugins: Optimization
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+  <label for="toctree-checkbox-4">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../ray/optimiser.html">
+     Ray Tune generic black-box optimiser
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../plugins_mesh.html">
+   Plugins: Materials and Mesh
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+  <label for="toctree-checkbox-5">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../materials.html">
+     Materials
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../meshing/01_intro.html">
+     Meshing introduction
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../meshing/02_2D_xy_mesh.html">
+     2D meshing: xy cross-section
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../meshing/03_2D_uz_mesh.html">
+     2D meshing: uz cross-section
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../meshing/04_refinement.html">
+     Controlling mesh resolution
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../plugins_process.html">
+   Plugins: Device simulators
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+  <label for="toctree-checkbox-6">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../thermal/thermal.html">
+     Thermal
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../devsim/01_pin_waveguide.html">
+     DEVSIM TCAD simulator
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../tcad/02_analytical_process.html">
+     Analytical process simulation
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../tcad/03_numerical_implantation.html">
+     Monte-Carlo implant simulations
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="../../../plugins_mode_solver.html">
+   Plugins: Mode solvers
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+  <label for="toctree-checkbox-7">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2 current active">
+    <a class="current reference internal" href="#">
+     Finite-element mode solver
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../tidy3d/01_tidy3d_modes.html">
+     Tidy3D mode solver
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../mpb/001_mpb_waveguide.html">
+     MPB mode-solver
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../eme/01_meow.html">
+     EME with MEOW
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../plugins_fdtd.html">
+   Plugins: FDTD
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/>
+  <label for="toctree-checkbox-8">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../tidy3d/00_tidy3d.html">
+     FDTD tidy3d
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../meep/001_meep_sparameters.html">
+     Meep FDTD
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../meep/002_gratings.html">
+     FDTD Meep gratings
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../lumerical/1_fdtd_sparameters.html">
+     FDTD Lumerical
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../plugins_circuits.html">
+   Plugins: Circuit simulators
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/>
+  <label for="toctree-checkbox-9">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../sax/sax.html">
+     SAX circuit simulator
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../lumerical/2_interconnect.html">
+     Lumerical INTERCONNECT
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../contribution.html">
+   Contributing
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../CHANGELOG.html">
+   CHANGELOG
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../components.html">
+   Components
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../api.html">
+   API
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/>
+  <label for="toctree-checkbox-10">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.Component.html">
+     gdsfactory.Component
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.ComponentReference.html">
+     gdsfactory.ComponentReference
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.read.import_gds.html">
+     gdsfactory.read.import_gds
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.read.from_yaml.html">
+     gdsfactory.read.from_yaml
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.read.from_np.html">
+     gdsfactory.read.from_np
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.read.from_phidl.html">
+     gdsfactory.read.from_phidl
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.read.from_dphox.html">
+     gdsfactory.read.from_dphox
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.path.Path.html">
+     gdsfactory.path.Path
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.path.straight.html">
+     gdsfactory.path.straight
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.path.euler.html">
+     gdsfactory.path.euler
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.path.arc.html">
+     gdsfactory.path.arc
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.path.spiral_archimedean.html">
+     gdsfactory.path.spiral_archimedean
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.path.smooth.html">
+     gdsfactory.path.smooth
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.cross_section.CrossSection.html">
+     gdsfactory.cross_section.CrossSection
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.cross_section.Transition.html">
+     gdsfactory.cross_section.Transition
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.cross_section.cross_section.html">
+     gdsfactory.cross_section.cross_section
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.cross_section.strip.html">
+     gdsfactory.cross_section.strip
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.cross_section.strip_auto_widen.html">
+     gdsfactory.cross_section.strip_auto_widen
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.cross_section.heater_metal.html">
+     gdsfactory.cross_section.heater_metal
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.cross_section.pin.html">
+     gdsfactory.cross_section.pin
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.cross_section.pn.html">
+     gdsfactory.cross_section.pn
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.cross_section.strip_heater_metal_undercut.html">
+     gdsfactory.cross_section.strip_heater_metal_undercut
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.cross_section.strip_heater_metal.html">
+     gdsfactory.cross_section.strip_heater_metal
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.cross_section.strip_heater_doped.html">
+     gdsfactory.cross_section.strip_heater_doped
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.cross_section.rib_heater_doped.html">
+     gdsfactory.cross_section.rib_heater_doped
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.cross_section.rib_heater_doped_via_stack.html">
+     gdsfactory.cross_section.rib_heater_doped_via_stack
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.path.transition.html">
+     gdsfactory.path.transition
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.cell.html">
+     gdsfactory.cell
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.cell_without_validator.html">
+     gdsfactory.cell_without_validator
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.types.Layer.html">
+     gdsfactory.types.Layer
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.types.ComponentSpec.html">
+     gdsfactory.types.ComponentSpec
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.types.LayerSpec.html">
+     gdsfactory.types.LayerSpec
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.types.CrossSectionSpec.html">
+     gdsfactory.types.CrossSectionSpec
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.types.CellSpec.html">
+     gdsfactory.types.CellSpec
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.pack.html">
+     gdsfactory.pack
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.grid.html">
+     gdsfactory.grid
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.grid_with_text.html">
+     gdsfactory.grid_with_text
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.get_netlist.get_netlist.html">
+     gdsfactory.get_netlist.get_netlist
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.geometry.write_drc.write_drc_deck_macro.html">
+     gdsfactory.geometry.write_drc.write_drc_deck_macro
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.geometry.write_drc.rule_width.html">
+     gdsfactory.geometry.write_drc.rule_width
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.geometry.write_drc.rule_space.html">
+     gdsfactory.geometry.write_drc.rule_space
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.geometry.write_drc.rule_min_width_or_space.html">
+     gdsfactory.geometry.write_drc.rule_min_width_or_space
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.geometry.write_drc.rule_separation.html">
+     gdsfactory.geometry.write_drc.rule_separation
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.geometry.write_drc.rule_enclosing.html">
+     gdsfactory.geometry.write_drc.rule_enclosing
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.geometry.write_drc.rule_area.html">
+     gdsfactory.geometry.write_drc.rule_area
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.geometry.write_drc.rule_density.html">
+     gdsfactory.geometry.write_drc.rule_density
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.geometry.write_drc.rule_not_inside.html">
+     gdsfactory.geometry.write_drc.rule_not_inside
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.gtidy3d.modes.Waveguide.html">
+     gdsfactory.simulation.gtidy3d.modes.Waveguide
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.gtidy3d.modes.WaveguideCoupler.html">
+     gdsfactory.simulation.gtidy3d.modes.WaveguideCoupler
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.gtidy3d.modes.sweep_width.html">
+     gdsfactory.simulation.gtidy3d.modes.sweep_width
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.gtidy3d.modes.sweep_bend_loss.html">
+     gdsfactory.simulation.gtidy3d.modes.sweep_bend_loss
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.gtidy3d.modes.group_index.html">
+     gdsfactory.simulation.gtidy3d.modes.group_index
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.gtidy3d.modes.plot_sweep_width.html">
+     gdsfactory.simulation.gtidy3d.modes.plot_sweep_width
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.eme.MEOW.html">
+     gdsfactory.simulation.eme.MEOW
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.modes.find_modes_waveguide.html">
+     gdsfactory.simulation.modes.find_modes_waveguide
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.modes.find_modes_coupler.html">
+     gdsfactory.simulation.modes.find_modes_coupler
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.modes.find_neff_vs_width.html">
+     gdsfactory.simulation.modes.find_neff_vs_width
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.modes.find_mode_dispersion.html">
+     gdsfactory.simulation.modes.find_mode_dispersion
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.modes.find_coupling_vs_gap.html">
+     gdsfactory.simulation.modes.find_coupling_vs_gap
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.modes.find_neff_ng_dw_dh.html">
+     gdsfactory.simulation.modes.find_neff_ng_dw_dh
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.modes.plot_neff_ng_dw_dh.html">
+     gdsfactory.simulation.modes.plot_neff_ng_dw_dh
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.modes.plot_neff_vs_width.html">
+     gdsfactory.simulation.modes.plot_neff_vs_width
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.modes.plot_coupling_vs_gap.html">
+     gdsfactory.simulation.modes.plot_coupling_vs_gap
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.plot.plot_sparameters.html">
+     gdsfactory.simulation.plot.plot_sparameters
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.plot.plot_imbalance2x2.html">
+     gdsfactory.simulation.plot.plot_imbalance2x2
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.plot.plot_loss2x2.html">
+     gdsfactory.simulation.plot.plot_loss2x2
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.get_effective_indices.html">
+     gdsfactory.simulation.get_effective_indices
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.gmeep.write_sparameters_meep.html">
+     gdsfactory.simulation.gmeep.write_sparameters_meep
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.gmeep.write_sparameters_meep_mpi.html">
+     gdsfactory.simulation.gmeep.write_sparameters_meep_mpi
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.gmeep.write_sparameters_meep_batch.html">
+     gdsfactory.simulation.gmeep.write_sparameters_meep_batch
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.gmeep.write_sparameters_grating.html">
+     gdsfactory.simulation.gmeep.write_sparameters_grating
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.gmeep.write_sparameters_grating_mpi.html">
+     gdsfactory.simulation.gmeep.write_sparameters_grating_mpi
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.gmeep.write_sparameters_grating_batch.html">
+     gdsfactory.simulation.gmeep.write_sparameters_grating_batch
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.gtidy3d.write_sparameters.html">
+     gdsfactory.simulation.gtidy3d.write_sparameters
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.gtidy3d.write_sparameters_batch.html">
+     gdsfactory.simulation.gtidy3d.write_sparameters_batch
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.gtidy3d.write_sparameters_grating_coupler.html">
+     gdsfactory.simulation.gtidy3d.write_sparameters_grating_coupler
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.lumerical.write_sparameters_lumerical.html">
+     gdsfactory.simulation.lumerical.write_sparameters_lumerical
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.sax.read.model_from_csv.html">
+     gdsfactory.simulation.sax.read.model_from_csv
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.sax.read.model_from_component.html">
+     gdsfactory.simulation.sax.read.model_from_component
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.sax.plot_model.html">
+     gdsfactory.simulation.sax.plot_model
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.sax.models.html">
+     gdsfactory.simulation.sax.models
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.lumerical.interconnect.install_design_kit.html">
+     gdsfactory.simulation.lumerical.interconnect.install_design_kit
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.lumerical.interconnect.add_interconnect_element.html">
+     gdsfactory.simulation.lumerical.interconnect.add_interconnect_element
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.lumerical.interconnect.get_interconnect_settings.html">
+     gdsfactory.simulation.lumerical.interconnect.get_interconnect_settings
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.lumerical.interconnect.send_to_interconnect.html">
+     gdsfactory.simulation.lumerical.interconnect.send_to_interconnect
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.lumerical.interconnect.run_wavelength_sweep.html">
+     gdsfactory.simulation.lumerical.interconnect.run_wavelength_sweep
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.simulation.lumerical.interconnect.plot_wavelength_sweep.html">
+     gdsfactory.simulation.lumerical.interconnect.plot_wavelength_sweep
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../routing.html">
+   Routing API
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/>
+  <label for="toctree-checkbox-11">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.get_route.html">
+     gdsfactory.routing.get_route
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.get_route_from_steps.html">
+     gdsfactory.routing.get_route_from_steps
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.route_quad.html">
+     gdsfactory.routing.route_quad
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.route_sharp.html">
+     gdsfactory.routing.route_sharp
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.get_bundle.html">
+     gdsfactory.routing.get_bundle
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.get_bundle_from_steps.html">
+     gdsfactory.routing.get_bundle_from_steps
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.get_bundle_path_length_match.html">
+     gdsfactory.routing.get_bundle_path_length_match
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.route_ports_to_side.html">
+     gdsfactory.routing.route_ports_to_side
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.route_south.html">
+     gdsfactory.routing.route_south
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.get_routes_bend180.html">
+     gdsfactory.routing.get_routes_bend180
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.get_routes_straight.html">
+     gdsfactory.routing.get_routes_straight
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.get_route_sbend.html">
+     gdsfactory.routing.get_route_sbend
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.get_bundle_sbend.html">
+     gdsfactory.routing.get_bundle_sbend
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.fanout2x2.html">
+     gdsfactory.routing.fanout2x2
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.fanout_component.html">
+     gdsfactory.routing.fanout_component
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.fanout_ports.html">
+     gdsfactory.routing.fanout_ports
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.add_fiber_array.add_fiber_array.html">
+     gdsfactory.routing.add_fiber_array.add_fiber_array
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.add_fiber_single.add_fiber_single.html">
+     gdsfactory.routing.add_fiber_single.add_fiber_single
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.add_electrical_pads_shortest.html">
+     gdsfactory.routing.add_electrical_pads_shortest
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.add_electrical_pads_top.html">
+     gdsfactory.routing.add_electrical_pads_top
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../_autosummary/gdsfactory.routing.add_electrical_pads_top_dc.html">
+     gdsfactory.routing.add_electrical_pads_top_dc
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../cli.html">
+   Command line interface
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
+            
+            <div class="navbar_extra_footer">
+            Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
+            </div>
+            
+        </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
+
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/gdsfactory/gdsfactory"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/gdsfactory/gdsfactory/issues/new?title=Issue%20on%20page%20%2Fnotebooks/plugins/fem/01_mode_solving.html&body=Your%20issue%20content%20here."
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Open an issue"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="headerbtn__text-container">open issue</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/gdsfactory/gdsfactory/edit/main/docs/notebooks/plugins/fem/01_mode_solving.ipynb"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Edit this page"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="headerbtn__text-container">suggest edit</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<div class="menu-dropdown menu-dropdown-download-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Download this page">
+      <i class="fas fa-download"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="../../../_sources/notebooks/plugins/fem/01_mode_solving.ipynb.txt"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Download source file"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="headerbtn__text-container">.ipynb</span>
+</a>
+
+      </li>
+      
+      <li>
+        
+<button onclick="printPdf(this)"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="left"
+title="Print to PDF"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="headerbtn__text-container">.pdf</span>
+</button>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+<label for="__page-toc"
+  class="headerbtn headerbtn-page-toc"
+  
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-list"></i>
+  </span>
+
+</label>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+    <div class="tocsection onthispage pt-5 pb-3">
+        <i class="fas fa-list"></i> Contents
+    </div>
+    <nav id="bd-toc-nav" aria-label="Page">
+        <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#Sweep-waveguide-width">
+   Sweep waveguide width
+  </a>
+ </li>
+</ul>
+
+    </nav>
+</div>
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>Finite-element mode solver</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#Sweep-waveguide-width">
+   Sweep waveguide width
+  </a>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            <main id="main-content" role="main">
+                
+              <div>
+                
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars and line breaks on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+    white-space: pre;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt .copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+.jp-RenderedHTMLCommon table,
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+.jp-RenderedHTMLCommon thead,
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+.jp-RenderedHTMLCommon tr,
+.jp-RenderedHTMLCommon th,
+.jp-RenderedHTMLCommon td,
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+.jp-RenderedHTMLCommon th,
+div.rendered_html th {
+  font-weight: bold;
+}
+.jp-RenderedHTMLCommon tbody tr:nth-child(odd),
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+.jp-RenderedHTMLCommon tbody tr:hover,
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<section id="Finite-element-mode-solver">
+<h1>Finite-element mode solver<a class="headerlink" href="#Finite-element-mode-solver" title="Permalink to this headline">#</a></h1>
+<p>You can mesh any component cross-section and solve the PDEs thanks to <a class="reference external" href="https://helgegehring.github.io/femwell/intro.html">femwell</a> mode - solver.</p>
+<p>Unlike other mode solvers, this actually uses the component geometry instead of a hardcoded geometry.</p>
+<p>You can directly compute the modes of a Gdsfactory cross-section (internally, it defines a “uz” mesh perpendicular to a straight component with the provided cross-section).</p>
+<p>You can also downsample layers from the LayerStack, and modify both the cross-section and LayerStack prior to simulation to change the geometry. You can also define refractive indices on the active PDK.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">gdsfactory</span> <span class="k">as</span> <span class="nn">gf</span>
+<span class="kn">from</span> <span class="nn">tqdm.auto</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">femwell</span> <span class="kn">import</span> <span class="n">mode_solver</span>
+<span class="kn">from</span> <span class="nn">gdsfactory.simulation.fem.mode_solver</span> <span class="kn">import</span> <span class="n">compute_cross_section_modes</span>
+<span class="kn">from</span> <span class="nn">gdsfactory.technology</span> <span class="kn">import</span> <span class="n">LayerStack</span>
+<span class="kn">from</span> <span class="nn">gdsfactory.cross_section</span> <span class="kn">import</span> <span class="n">rib</span>
+<span class="kn">from</span> <span class="nn">gdsfactory.generic_tech</span> <span class="kn">import</span> <span class="n">LAYER_STACK</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">rich.logging</span> <span class="kn">import</span> <span class="n">RichHandler</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">removeHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s2">&quot;WARNING&quot;</span><span class="p">,</span> <span class="n">datefmt</span><span class="o">=</span><span class="s2">&quot;[</span><span class="si">%X</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">handlers</span><span class="o">=</span><span class="p">[</span><span class="n">RichHandler</span><span class="p">()])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:14:01.411 | INFO     | gdsfactory.config:&lt;module&gt;:50 - Load &#39;/home/runner/work/gdsfactory/gdsfactory/gdsfactory&#39; 6.23.4
+2023-01-22 16:14:02.321 | INFO     | gdsfactory.technology.layer_views:__init__:779 - Importing LayerViews from KLayout layer properties file: /home/runner/work/gdsfactory/gdsfactory/gdsfactory/generic_tech/klayout/tech/layers.lyp.
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">filtered_layerstack</span> <span class="o">=</span> <span class="n">LayerStack</span><span class="p">(</span>
+    <span class="n">layers</span><span class="o">=</span><span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">LAYER_STACK</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="s2">&quot;core&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;clad&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;slab90&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;box&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="n">filtered_layerstack</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span>
+    <span class="s2">&quot;core&quot;</span>
+<span class="p">]</span><span class="o">.</span><span class="n">thickness</span> <span class="o">=</span> <span class="mf">0.2</span>  <span class="c1"># Perturb the layerstack before simulating</span>
+
+<span class="n">resolutions</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">resolutions</span><span class="p">[</span><span class="s2">&quot;core&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;resolution&quot;</span><span class="p">:</span> <span class="mf">0.02</span><span class="p">,</span> <span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+<span class="n">resolutions</span><span class="p">[</span><span class="s2">&quot;clad&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;resolution&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+<span class="n">resolutions</span><span class="p">[</span><span class="s2">&quot;box&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;resolution&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+<span class="n">resolutions</span><span class="p">[</span><span class="s2">&quot;slab90&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;resolution&quot;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span> <span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+
+<span class="n">lams</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">xs</span> <span class="o">=</span> <span class="n">compute_cross_section_modes</span><span class="p">(</span>
+    <span class="n">cross_section</span><span class="o">=</span><span class="n">rib</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mf">0.6</span><span class="p">),</span>
+    <span class="n">layerstack</span><span class="o">=</span><span class="n">filtered_layerstack</span><span class="p">,</span>
+    <span class="n">wl</span><span class="o">=</span><span class="mf">1.55</span><span class="p">,</span>
+    <span class="n">num_modes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">resolutions</span><span class="o">=</span><span class="n">resolutions</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #7fbfbf; text-decoration-color: #7fbfbf">[16:14:04] </span><span style="color: #800000; text-decoration-color: #800000">WARNING </span> WARNING:rich:This version of Tidy3D was pip installed from the <span style="color: #008000; text-decoration-color: #008000">'tidy3d-beta'</span>    <a href="file:///usr/share/miniconda/envs/anaconda-client-env/lib/python3.9/site-packages/tidy3d/__init__.py" target="_blank"><span style="color: #7f7f7f; text-decoration-color: #7f7f7f">__init__.py</span></a><span style="color: #7f7f7f; text-decoration-color: #7f7f7f">:</span><a href="file:///usr/share/miniconda/envs/anaconda-client-env/lib/python3.9/site-packages/tidy3d/__init__.py#102" target="_blank"><span style="color: #7f7f7f; text-decoration-color: #7f7f7f">102</span></a>
+<span style="color: #7fbfbf; text-decoration-color: #7fbfbf">           </span>         repository on PyPI. Future releases will be uploaded to the <span style="color: #008000; text-decoration-color: #008000">'tidy3d'</span>            <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">               </span>
+<span style="color: #7fbfbf; text-decoration-color: #7fbfbf">           </span>         repository. From now on, please use <span style="color: #008000; text-decoration-color: #008000">'pip install tidy3d'</span> instead.               <span style="color: #7f7f7f; text-decoration-color: #7f7f7f">               </span>
+</pre></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #7fbfbf; text-decoration-color: #7fbfbf">           </span><span style="color: #000080; text-decoration-color: #000080">INFO    </span> INFO:rich:Using client version: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.8</span>.<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">2</span>                                           <a href="file:///usr/share/miniconda/envs/anaconda-client-env/lib/python3.9/site-packages/tidy3d/__init__.py" target="_blank"><span style="color: #7f7f7f; text-decoration-color: #7f7f7f">__init__.py</span></a><span style="color: #7f7f7f; text-decoration-color: #7f7f7f">:</span><a href="file:///usr/share/miniconda/envs/anaconda-client-env/lib/python3.9/site-packages/tidy3d/__init__.py#120" target="_blank"><span style="color: #7f7f7f; text-decoration-color: #7f7f7f">120</span></a>
+</pre></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:14:05.077 | INFO     | gdsfactory.simulation.gtidy3d:&lt;module&gt;:54 - Tidy3d &#39;1.8.2&#39; installed at [&#39;/usr/share/miniconda/envs/anaconda-client-env/lib/python3.9/site-packages/tidy3d&#39;]
+2023-01-22 16:14:14.935 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_f44aaf43_ce353fd2.npz&#39;)
+</pre></div></div>
+</div>
+<p>The solver returns the effective indices (lams), FEM basis functions (basis) and eigenvectors (xs):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lams</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">xs</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(array([2.56562633+6.77055620e-08j, 2.14074777-1.99106750e-08j,
+        2.08164299-2.23166927e-08j, 2.0754274 -7.98847203e-10j]),
+ &lt;skfem CellBasis(MeshTri1, ElementComposite) object&gt;
+   Number of elements: 13730
+   Number of DOFs: 27627
+   Size: 63267840 B,
+ array([[ 5.87958928e+00-5.48398693e+00j,  1.00176085e+01-9.34358314e+00j,
+          7.92943764e+00-7.39591262e+00j, ...,
+         -9.93136429e-09-4.82975225e-09j,  3.67504160e-05+3.94189196e-05j,
+         -1.54699397e-06-1.89695101e-06j],
+        [ 1.23095788e+00+4.94556327e+00j,  1.75546632e+00+7.05285473e+00j,
+          1.09934268e+00+4.41677740e+00j, ...,
+          2.65020364e-05-6.60348783e-06j, -9.43490780e-03+2.34836167e-03j,
+          1.85659520e-02-4.62120448e-03j],
+        [-1.55165836e+00-3.49388350e-01j, -1.62920741e+00-3.66849820e-01j,
+         -9.97380877e-01-2.24581153e-01j, ...,
+          2.01237406e-04-8.93703154e-04j, -7.79401487e-03+3.46136962e-02j,
+          6.63530763e-02-2.94678705e-01j],
+        [-1.11655637e+00-1.62286065e+00j, -1.30375581e+00-1.89494632e+00j,
+         -7.12222968e-01-1.03518192e+00j, ...,
+          9.86402670e-04-6.78659465e-04j, -2.58503698e-02+1.77855311e-02j,
+          2.97208086e-01-2.04484472e-01j]]))
+</pre></div></div>
+</div>
+<p>You can use them as inputs to other <a class="reference external" href="https://github.com/HelgeGehring/femwell/blob/main/femwell/mode_solver.py">femwell mode solver functions</a> to inspect or analyze the modes:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">mode_solver</span><span class="o">.</span><span class="n">plot_mode</span><span class="p">(</span>
+    <span class="n">basis</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">plot_vectors</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;E&quot;</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;y&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/notebooks_plugins_fem_01_mode_solving_6_0.png" src="../../../_images/notebooks_plugins_fem_01_mode_solving_6_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/notebooks_plugins_fem_01_mode_solving_7_0.png" src="../../../_images/notebooks_plugins_fem_01_mode_solving_7_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">te_frac</span> <span class="o">=</span> <span class="n">mode_solver</span><span class="o">.</span><span class="n">calculate_te_frac</span><span class="p">(</span><span class="n">basis</span><span class="p">,</span> <span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">te_frac</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+0.9905384201024471
+</pre></div></div>
+</div>
+<section id="Sweep-waveguide-width">
+<h2>Sweep waveguide width<a class="headerlink" href="#Sweep-waveguide-width" title="Permalink to this headline">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">widths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<span class="n">num_modes</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">all_lams</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">widths</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">num_modes</span><span class="p">))</span>
+<span class="n">all_te_fracs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">widths</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">num_modes</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">width</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">widths</span><span class="p">)):</span>
+    <span class="n">lams</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">xs</span> <span class="o">=</span> <span class="n">compute_cross_section_modes</span><span class="p">(</span>
+        <span class="n">cross_section</span><span class="o">=</span><span class="n">gf</span><span class="o">.</span><span class="n">cross_section</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">),</span>
+        <span class="n">layerstack</span><span class="o">=</span><span class="n">filtered_layerstack</span><span class="p">,</span>
+        <span class="n">wl</span><span class="o">=</span><span class="mf">1.55</span><span class="p">,</span>
+        <span class="n">num_modes</span><span class="o">=</span><span class="n">num_modes</span><span class="p">,</span>
+        <span class="n">resolutions</span><span class="o">=</span><span class="n">resolutions</span><span class="p">,</span>
+        <span class="n">wafer_padding</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">all_lams</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">lams</span>
+    <span class="n">all_te_fracs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">mode_solver</span><span class="o">.</span><span class="n">calculate_te_frac</span><span class="p">(</span><span class="n">basis</span><span class="p">,</span> <span class="n">xs</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_modes</span><span class="p">)</span>
+    <span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "4be9a5a95c8e45d6aa48cab92b846ecc"}</script></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:14:23.588 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_3e9a21bd_efe87381.npz&#39;)
+/tmp/ipykernel_10157/656326063.py:15: ComplexWarning: Casting complex values to real discards the imaginary part
+  all_lams[i] = lams
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:14:30.309 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_2f6d91a7_efe87381.npz&#39;)
+/tmp/ipykernel_10157/656326063.py:15: ComplexWarning: Casting complex values to real discards the imaginary part
+  all_lams[i] = lams
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:14:37.314 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_b76557f8_efe87381.npz&#39;)
+/tmp/ipykernel_10157/656326063.py:15: ComplexWarning: Casting complex values to real discards the imaginary part
+  all_lams[i] = lams
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:14:43.954 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_c5f4b290_efe87381.npz&#39;)
+/tmp/ipykernel_10157/656326063.py:15: ComplexWarning: Casting complex values to real discards the imaginary part
+  all_lams[i] = lams
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:14:53.336 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_09241e1d_efe87381.npz&#39;)
+/tmp/ipykernel_10157/656326063.py:15: ComplexWarning: Casting complex values to real discards the imaginary part
+  all_lams[i] = lams
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:14:59.868 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_7fe4b240_efe87381.npz&#39;)
+/tmp/ipykernel_10157/656326063.py:15: ComplexWarning: Casting complex values to real discards the imaginary part
+  all_lams[i] = lams
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:15:06.726 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_2d86ac00_efe87381.npz&#39;)
+/tmp/ipykernel_10157/656326063.py:15: ComplexWarning: Casting complex values to real discards the imaginary part
+  all_lams[i] = lams
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:15:11.784 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_ba346291_efe87381.npz&#39;)
+/tmp/ipykernel_10157/656326063.py:15: ComplexWarning: Casting complex values to real discards the imaginary part
+  all_lams[i] = lams
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:15:16.354 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_8528ff66_efe87381.npz&#39;)
+/tmp/ipykernel_10157/656326063.py:15: ComplexWarning: Casting complex values to real discards the imaginary part
+  all_lams[i] = lams
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:15:21.006 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_3cf0c077_efe87381.npz&#39;)
+/tmp/ipykernel_10157/656326063.py:15: ComplexWarning: Casting complex values to real discards the imaginary part
+  all_lams[i] = lams
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:15:25.716 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_b62973df_efe87381.npz&#39;)
+/tmp/ipykernel_10157/656326063.py:15: ComplexWarning: Casting complex values to real discards the imaginary part
+  all_lams[i] = lams
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:15:30.687 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_729092c5_efe87381.npz&#39;)
+/tmp/ipykernel_10157/656326063.py:15: ComplexWarning: Casting complex values to real discards the imaginary part
+  all_lams[i] = lams
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:15:36.495 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_d4922581_efe87381.npz&#39;)
+/tmp/ipykernel_10157/656326063.py:15: ComplexWarning: Casting complex values to real discards the imaginary part
+  all_lams[i] = lams
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:15:42.493 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_f2ba986f_efe87381.npz&#39;)
+/tmp/ipykernel_10157/656326063.py:15: ComplexWarning: Casting complex values to real discards the imaginary part
+  all_lams[i] = lams
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:15:48.391 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_e0cc9d0a_efe87381.npz&#39;)
+/tmp/ipykernel_10157/656326063.py:15: ComplexWarning: Casting complex values to real discards the imaginary part
+  all_lams[i] = lams
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:15:54.576 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_4839c75b_efe87381.npz&#39;)
+/tmp/ipykernel_10157/656326063.py:15: ComplexWarning: Casting complex values to real discards the imaginary part
+  all_lams[i] = lams
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:16:01.421 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_467af3b0_efe87381.npz&#39;)
+/tmp/ipykernel_10157/656326063.py:15: ComplexWarning: Casting complex values to real discards the imaginary part
+  all_lams[i] = lams
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:16:08.696 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_e0aa3c71_efe87381.npz&#39;)
+/tmp/ipykernel_10157/656326063.py:15: ComplexWarning: Casting complex values to real discards the imaginary part
+  all_lams[i] = lams
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:16:16.342 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_57f480b5_efe87381.npz&#39;)
+/tmp/ipykernel_10157/656326063.py:15: ComplexWarning: Casting complex values to real discards the imaginary part
+  all_lams[i] = lams
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-01-22 16:16:23.934 | INFO     | gdsfactory.simulation.fem.mode_solver:compute_cross_section_modes:160 - Write mode to PosixPath(&#39;/home/runner/.gdsfactory/modes/xs_a6d85b35_efe87381.npz&#39;)
+/tmp/ipykernel_10157/656326063.py:15: ComplexWarning: Casting complex values to real discards the imaginary part
+  all_lams[i] = lams
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">all_lams</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">all_lams</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;waveguide Width [µm]&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Effective refractive index&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mf">1.444</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">all_lams</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">all_lams</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.444</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">lams</span><span class="p">,</span> <span class="n">te_fracs</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">all_lams</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">all_te_fracs</span><span class="o">.</span><span class="n">T</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">widths</span><span class="p">,</span> <span class="n">lams</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">widths</span><span class="p">,</span> <span class="n">lams</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">te_fracs</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;cool&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/notebooks_plugins_fem_01_mode_solving_11_0.png" src="../../../_images/notebooks_plugins_fem_01_mode_solving_11_0.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+<script type="application/vnd.jupyter.widget-state+json">
+{"state": {"605bb1ca4f8a49fc9cf7e4bc482faf10": {"model_name": "LayoutModel", "model_module": "@jupyter-widgets/base", "model_module_version": "2.0.0", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "2.0.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "2.0.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border_bottom": null, "border_left": null, "border_right": null, "border_top": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "476cb83e81764602b3cad8e6eff4579a": {"model_name": "ProgressStyleModel", "model_module": "@jupyter-widgets/controls", "model_module_version": "2.0.0", "state": {"_model_module": "@jupyter-widgets/controls", "_model_module_version": "2.0.0", "_model_name": "ProgressStyleModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "2.0.0", "_view_name": "StyleView", "bar_color": null, "description_width": ""}}, "310698bbff6643a0a8938825db7cbef4": {"model_name": "FloatProgressModel", "model_module": "@jupyter-widgets/controls", "model_module_version": "2.0.0", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "2.0.0", "_model_name": "FloatProgressModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "2.0.0", "_view_name": "ProgressView", "bar_style": "success", "description": "", "description_allow_html": false, "layout": "IPY_MODEL_605bb1ca4f8a49fc9cf7e4bc482faf10", "max": 20.0, "min": 0.0, "orientation": "horizontal", "style": "IPY_MODEL_476cb83e81764602b3cad8e6eff4579a", "tabbable": null, "tooltip": null, "value": 20.0}}, "927bf92b11d44debab9e7ccc95fa9f56": {"model_name": "LayoutModel", "model_module": "@jupyter-widgets/base", "model_module_version": "2.0.0", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "2.0.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "2.0.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border_bottom": null, "border_left": null, "border_right": null, "border_top": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "319f8968a9534befa19d0c16026ed1e3": {"model_name": "HTMLStyleModel", "model_module": "@jupyter-widgets/controls", "model_module_version": "2.0.0", "state": {"_model_module": "@jupyter-widgets/controls", "_model_module_version": "2.0.0", "_model_name": "HTMLStyleModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "2.0.0", "_view_name": "StyleView", "background": null, "description_width": "", "font_size": null, "text_color": null}}, "b0c819dd24a942c38cb09701185eccd3": {"model_name": "HTMLModel", "model_module": "@jupyter-widgets/controls", "model_module_version": "2.0.0", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "2.0.0", "_model_name": "HTMLModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "2.0.0", "_view_name": "HTMLView", "description": "", "description_allow_html": false, "layout": "IPY_MODEL_927bf92b11d44debab9e7ccc95fa9f56", "placeholder": "\u200b", "style": "IPY_MODEL_319f8968a9534befa19d0c16026ed1e3", "tabbable": null, "tooltip": null, "value": "100%"}}, "527c365ee984447d87b1f6817a89e93e": {"model_name": "LayoutModel", "model_module": "@jupyter-widgets/base", "model_module_version": "2.0.0", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "2.0.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "2.0.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border_bottom": null, "border_left": null, "border_right": null, "border_top": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "9b3fb1ec7ec74c349b31b33406d50cf1": {"model_name": "HTMLStyleModel", "model_module": "@jupyter-widgets/controls", "model_module_version": "2.0.0", "state": {"_model_module": "@jupyter-widgets/controls", "_model_module_version": "2.0.0", "_model_name": "HTMLStyleModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "2.0.0", "_view_name": "StyleView", "background": null, "description_width": "", "font_size": null, "text_color": null}}, "64c8594d93764e3ab4384a3282f7887a": {"model_name": "HTMLModel", "model_module": "@jupyter-widgets/controls", "model_module_version": "2.0.0", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "2.0.0", "_model_name": "HTMLModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "2.0.0", "_view_name": "HTMLView", "description": "", "description_allow_html": false, "layout": "IPY_MODEL_527c365ee984447d87b1f6817a89e93e", "placeholder": "\u200b", "style": "IPY_MODEL_9b3fb1ec7ec74c349b31b33406d50cf1", "tabbable": null, "tooltip": null, "value": " 20/20 [02:06&lt;00:00,  7.08s/it]"}}, "a6dbb3283fae40cf862e00d9ae788b77": {"model_name": "LayoutModel", "model_module": "@jupyter-widgets/base", "model_module_version": "2.0.0", "state": {"_model_module": "@jupyter-widgets/base", "_model_module_version": "2.0.0", "_model_name": "LayoutModel", "_view_count": null, "_view_module": "@jupyter-widgets/base", "_view_module_version": "2.0.0", "_view_name": "LayoutView", "align_content": null, "align_items": null, "align_self": null, "border_bottom": null, "border_left": null, "border_right": null, "border_top": null, "bottom": null, "display": null, "flex": null, "flex_flow": null, "grid_area": null, "grid_auto_columns": null, "grid_auto_flow": null, "grid_auto_rows": null, "grid_column": null, "grid_gap": null, "grid_row": null, "grid_template_areas": null, "grid_template_columns": null, "grid_template_rows": null, "height": null, "justify_content": null, "justify_items": null, "left": null, "margin": null, "max_height": null, "max_width": null, "min_height": null, "min_width": null, "object_fit": null, "object_position": null, "order": null, "overflow": null, "padding": null, "right": null, "top": null, "visibility": null, "width": null}}, "4be9a5a95c8e45d6aa48cab92b846ecc": {"model_name": "HBoxModel", "model_module": "@jupyter-widgets/controls", "model_module_version": "2.0.0", "state": {"_dom_classes": [], "_model_module": "@jupyter-widgets/controls", "_model_module_version": "2.0.0", "_model_name": "HBoxModel", "_view_count": null, "_view_module": "@jupyter-widgets/controls", "_view_module_version": "2.0.0", "_view_name": "HBoxView", "box_style": "", "children": ["IPY_MODEL_b0c819dd24a942c38cb09701185eccd3", "IPY_MODEL_310698bbff6643a0a8938825db7cbef4", "IPY_MODEL_64c8594d93764e3ab4384a3282f7887a"], "layout": "IPY_MODEL_a6dbb3283fae40cf862e00d9ae788b77", "tabbable": null, "tooltip": null}}}, "version_major": 2, "version_minor": 0}
+</script></section>
+</section>
+
+
+              </div>
+              
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="../../../plugins_mode_solver.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Plugins: Mode solvers</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="../tidy3d/01_tidy3d_modes.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Tidy3D mode solver</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            </footer>
+        </div>
+    </div>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+      &copy; Copyright 2020, MIT License.<br/>
+</p>
+        </footer>
+    </div>
+    
+</div>
+
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
+
+  </body>
+</html>
