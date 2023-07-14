@@ -1,0 +1,110 @@
+{# This is a Jinja2 template for generating Electrostatic simulation settings for Elmer FEM #}
+Check Keywords Warn
+INCLUDE {{ name }}/mesh.names
+
+Header
+  Mesh DB "." "{{ name }}"
+End
+
+Simulation
+  Max Output Level = 3
+  Coordinate System = Cartesian 3D
+  Simulation Type = Steady State
+  Steady State Max Iterations = 1
+  ! Coordinate Scaling = 1e-06
+End
+
+Constants
+  Permittivity Of Vacuum = 8.854187812813e-12
+End
+
+Solver 1
+  Equation = Electrostatics
+  Procedure = "StatElecSolveVec" "StatElecSolver"
+  Variable = Potential
+  Calculate Electric Energy = True
+  Calculate Electric Field = True
+  Calculate Capacitance Matrix = True
+  Capacitance Matrix Filename = {{ name }}_capacitance.dat
+  Vector Assembly = True
+  Element = p:{{ element_order }}
+
+  Steady State Convergence Tolerance = 1.0e-5
+  Nonlinear System Max Iterations = 20
+  Nonlinear System Consistent Norm = True
+  Nonlinear System Convergence Tolerance = 1.0e-7
+  Nonlinear System Newton After Iterations = 3
+  Nonlinear System Newton After Tolerance = 1e-2
+  Nonlinear System Relaxation Factor = 1
+
+  Linear System Solver = Iterative
+  Linear System Iterative Method = GCR
+  Linear System Max Iterations = 30
+  Linear System Convergence Tolerance = 1.0e-12
+  Linear System Abort Not Converged = False
+  Linear System Residual Output = 10
+  Linear System Preconditioning = multigrid
+  Linear System Refactorize = False
+  MG Method = p
+  MG Levels = {{ element_order }}
+  MG Smoother = SGS
+  MG Pre Smoothing iterations = 2
+  MG Post Smoothing Iterations = 2
+  MG Lowest Linear Solver = iterative
+  mglowest: Linear System Scaling = False
+  mglowest: Linear System Iterative Method = CG
+  mglowest: Linear System Preconditioning =
+  mglowest: Linear System Max Iterations = 100
+  mglowest: Linear System Convergence Tolerance = 1.0e-4
+End
+
+Solver 2
+  Exec Solver = Always
+  Equation = ResultOutput
+  Procedure = "ResultOutputSolve" "ResultOutputSolver"
+  Output File Name = "{{ name }}"
+  Vtu format = Logical True
+  Discontinuous Bodies = Logical True
+  Save Geometry Ids = Logical True
+  Save All Meshes = Logical True
+End
+
+!Solver 3
+!  Exec Solver = Always
+!  Equation = "sv"
+!  Procedure = "SaveData" "SaveScalars"
+!  Filename = capacitance
+!End
+
+Equation 1
+  Active Solvers(2) = 1 2
+End
+
+{# TODO infer these Materials from LayerStack #}
+{% for material, properties in used_materials.items() %}
+Material {{ loop.index }}
+  $ {{ material }}_material = {{ loop.index }}
+  Relative Permittivity = {{ properties.relative_permittivity }}
+End
+{%- endfor -%}
+
+{# TODO infer target bodies from gmsh netlist #}
+{% for body, properties in bodies.items() %}
+Body {{ loop.index }}
+  Target Bodies(1) = $ {{ body }}
+  Equation = 1
+  Material = $ {{ properties.material }}_material
+  {{ body }} = Logical True
+End
+{%- endfor %}
+
+Boundary Condition 1
+  Target Boundaries(1) = $ ground
+  Potential = 0.0
+End
+{%- for signal in signals %}
+Boundary Condition {{ loop.index + 1 }}
+  Target Boundaries(1) = $ {{ signal }}
+  Capacitance Body = {{ loop.index }}
+End
+{%- endfor %}
