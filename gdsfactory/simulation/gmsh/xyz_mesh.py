@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, Optional
+from typing import Dict, Optional, Sequence
 
 import numpy as np
 
@@ -46,6 +46,8 @@ def xyz_mesh(
     layerstack: LayerStack,
     resolutions: Optional[Dict] = None,
     default_characteristic_length: float = 0.5,
+    background_tag: Optional[str] = None,
+    background_padding: Sequence[float, float, float, float, float, float] = (2.0,) * 6,
     global_scaling: float = 1,
     filename: Optional[str] = None,
     verbosity: Optional[int] = 0,
@@ -59,6 +61,8 @@ def xyz_mesh(
         layerstack (LayerStack): gdsfactory LayerStack to parse
         resolutions (Dict): Pairs {"layername": {"resolution": float, "distance": "float}} to roughly control mesh refinement
         default_characteristic_length (float): gmsh maximum edge length
+        background_tag: name of the background layer to add (default: no background added)
+        background_padding: [-x, +x, -y, +y, -z, +z] distances to add to the components and to fill with ``background_tag``
         global_scaling: factor to scale all mesh coordinates by (e.g. 1E-6 to go from um to m)
         filename (str, path): where to save the .msh file
         round_tol: during gds --> mesh conversion cleanup, number of decimal points at which to round the gdsfactory/shapely points before introducing to gmsh
