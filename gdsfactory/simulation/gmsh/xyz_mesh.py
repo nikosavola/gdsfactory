@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import Dict, Optional, Sequence
 
 import numpy as np
+from shapely.geometry import Polygon
+from shapely.ops import unary_union
 
 from gdsfactory.simulation.gmsh.parse_component import bufferize
 from gdsfactory.simulation.gmsh.parse_gds import cleanup_component
@@ -62,7 +64,7 @@ def xyz_mesh(
         resolutions (Dict): Pairs {"layername": {"resolution": float, "distance": "float}} to roughly control mesh refinement
         default_characteristic_length (float): gmsh maximum edge length
         background_tag: name of the background layer to add (default: no background added)
-        background_padding: [-x, +x, -y, +y, -z, +z] distances to add to the components and to fill with ``background_tag``
+        background_padding: [-x, -y, -z, +x, +y, +z] distances to add to the components and to fill with ``background_tag``
         global_scaling: factor to scale all mesh coordinates by (e.g. 1E-6 to go from um to m)
         filename (str, path): where to save the .msh file
         round_tol: during gds --> mesh conversion cleanup, number of decimal points at which to round the gdsfactory/shapely points before introducing to gmsh
@@ -77,6 +79,22 @@ def xyz_mesh(
     # Meshwell Prisms from gdsfactory polygons and layerstack
     model = Model()
     prisms_dict = define_prisms(layer_polygons_dict, layerstack, model)
+
+    # Add background polygon
+    if background_tag is not None:
+        bbox = component.get_polygon_enclosure() #unary_union(list(shapes.values())).bounds 
+        # c2 = gf.geometry.boolean(A=bbox, B=everything, operation="not", layer=background_tag)
+        shapes[background_tag] = Polygon(
+            [
+                [bounds[0] - background_padding[0], bounds[1] - background_padding[1]],
+                [bounds[0] - background_padding[0], bounds[3] + background_padding[3]],
+                [bounds[2] + background_padding[2], bounds[3] + background_padding[3]],
+                [bounds[2] + background_padding[2], bounds[1] - background_padding[1]],
+
+                [bounds[4] + background_padding[4], bounds[5] + background_padding[3]],
+                [bounds[4] + background_padding[4], bounds[3] - background_padding[1]],
+            ]
+        )
 
     # Mesh
     mesh_out = model.mesh(
