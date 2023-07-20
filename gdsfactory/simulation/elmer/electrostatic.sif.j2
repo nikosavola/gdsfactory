@@ -11,7 +11,7 @@ Simulation
   Coordinate System = Cartesian 3D
   Simulation Type = Steady State
   Steady State Max Iterations = 1
-  ! Coordinate Scaling = 1e-06
+  Coordinate Scaling = 1e-06
 End
 
 Constants
@@ -81,15 +81,15 @@ Equation 1
 End
 
 {# TODO infer these Materials from LayerStack #}
-{% for material, properties in used_materials.items() %}
+{%- for material, properties in used_materials.items() %}
 Material {{ loop.index }}
   $ {{ material }}_material = {{ loop.index }}
   Relative Permittivity = {{ properties.relative_permittivity }}
 End
-{%- endfor -%}
+{%- endfor %}
 
-{# TODO infer target bodies from gmsh netlist #}
-{% for body, properties in bodies.items() %}
+! Define dielectrics
+{%- for body, properties in bodies.items() %}
 Body {{ loop.index }}
   Target Bodies(1) = $ {{ body }}
   Equation = 1
@@ -99,8 +99,8 @@ End
 {%- endfor %}
 
 Boundary Condition 1
-  Target Boundaries(1) = $ ground
-  Potential = 0.0
+  Target Boundaries(1) = $ {{ metal_layers|join(' ') }}
+  Potential = 0.0  ! Always ground
 End
 {%- for signal in signals %}
 Boundary Condition {{ loop.index + 1 }}
