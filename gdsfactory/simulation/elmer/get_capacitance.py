@@ -5,8 +5,9 @@ import subprocess
 import itertools
 from math import inf
 from pathlib import Path
-from typing import Dict, Any, Tuple, Optional, Iterable
+from typing import Dict, Any, Tuple, Optional, Iterable, Sequence
 
+import gmsh
 from pandas import read_csv
 from numpy import isfinite
 from jinja2 import Environment, FileSystemLoader
@@ -57,7 +58,7 @@ def _generate_sif(
     name: str,
     signals: Sequence[str],
     bodies: Dict[str, Dict[str, Any]],
-    metal_layers: Iterable[str],
+    ground_layers: Iterable[str],
     layer_stack: LayerStack,
     material_spec: MaterialSpec,
     element_order: int,
@@ -201,7 +202,7 @@ def run_capacitive_simulation(
         simulation_folder:
             Directory for storing the simulation results.
             Default is a temporary directory.
-        mesh_parameyers:
+        mesh_parameters:
             Keyword arguments to provide to :func:`~Component.to_gmsh`.
 
     .. _Elmer https://github.com/ElmerCSC/elmerfem
@@ -238,23 +239,38 @@ def run_capacitive_simulation(
         **(mesh_parameters or {}),
     )
 
-    # Signals are converted to Elmer Boundary Conditions
-    # TODO infer port delimiter from somewhere
-    port_delimiter = "__"
-    signals = [
-        next(k for k, v in layer_stack.layers.items() if v.layer == port.layer)
-        + f"{port_delimiter}{port.name}"  # find first match
-        for port in component.get_ports()
+    gmsh.initialize()
+    gmsh.merge(str(simulation_folder / filename))
+    mesh_surface_entities = [
+        gmsh.model.getPhysicalName(*dimtag)
+        for dimtag in gmsh.model.getPhysicalGroups()
+        if dimtag[0] == 2
     ]
-    metal_layers = {
+    gmsh.finalize()
+
+    # Signals are converted to Elmer Boundary Conditions
+    ground_layers = {
         next(k for k, v in layer_stack.layers.items() if v.layer == port.layer)
         for port in component.get_ports()
-    }  # assume ports are only on metal layers
+    }  # ports allowed only on metal
+    # TODO infer port delimiter from somewhere
+    # TODO raise error for port delimiters not supported by Elmer MATC or find how to escape
+    port_delimiter = "__"
+    metal_surfaces = [
+        e for e in mesh_surface_entities if any(ground in e for ground in ground_layers)
+    ]
+    metal_signal_surfaces = [
+        e for e in metal_surfaces if any(port in e for port in component.ports)
+    ]
+    metal_ground_surfaces = set(metal_surfaces) - set(metal_signal_surfaces)
+
+    ground_layers |= metal_ground_surfaces
+
     # dielectrics
     bodies = {
         k: {"material": v.material}
         for k, v in layer_stack.layers.items()
-        if port_delimiter not in k and k not in metal_layers
+        if port_delimiter not in k and k not in ground_layers
     }
     if background_tag := (mesh_parameters or {}).get("background_tag", None):
         bodies = {**bodies, background_tag: {"material": background_tag}}
@@ -262,9 +278,9 @@ def run_capacitive_simulation(
     _generate_sif(
         simulation_folder,
         component.name,
-        signals,
+        metal_signal_surfaces,
         bodies,
-        metal_layers,
+        ground_layers,
         layer_stack,
         material_spec,
         element_order,

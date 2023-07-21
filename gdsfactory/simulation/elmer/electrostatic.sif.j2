@@ -40,7 +40,7 @@ Solver 1
   Linear System Solver = Iterative
   Linear System Iterative Method = GCR
   Linear System Max Iterations = 30
-  Linear System Convergence Tolerance = 1.0e-12
+  Linear System Convergence Tolerance = 1.0e-13
   Linear System Abort Not Converged = False
   Linear System Residual Output = 10
   Linear System Preconditioning = multigrid
@@ -53,9 +53,9 @@ Solver 1
   MG Lowest Linear Solver = iterative
   mglowest: Linear System Scaling = False
   mglowest: Linear System Iterative Method = CG
-  mglowest: Linear System Preconditioning =
+  mglowest: Linear System Preconditioning = none
   mglowest: Linear System Max Iterations = 100
-  mglowest: Linear System Convergence Tolerance = 1.0e-4
+  mglowest: Linear System Convergence Tolerance = 1.0e-5
 End
 
 Solver 2
@@ -67,20 +67,15 @@ Solver 2
   Discontinuous Bodies = Logical True
   Save Geometry Ids = Logical True
   Save All Meshes = Logical True
+  ! Write different potentials in individual files
+  ! TODO for some reason the files have missing field point data with this on
+  !Constraint Modes Analysis = Logical True
 End
-
-!Solver 3
-!  Exec Solver = Always
-!  Equation = "sv"
-!  Procedure = "SaveData" "SaveScalars"
-!  Filename = capacitance
-!End
 
 Equation 1
   Active Solvers(2) = 1 2
 End
 
-{# TODO infer these Materials from LayerStack #}
 {%- for material, properties in used_materials.items() %}
 Material {{ loop.index }}
   $ {{ material }}_material = {{ loop.index }}
@@ -98,8 +93,10 @@ Body {{ loop.index }}
 End
 {%- endfor %}
 
+! BCs have to be on 2D surfaces. Consequently, we
+! apply them to all physical sides of the bodies
 Boundary Condition 1
-  Target Boundaries(1) = $ {{ metal_layers|join(' ') }}
+  Target Boundaries({{ ground_layers | length }}) = $ {{ ground_layers | join(' ') }}
   Potential = 0.0  ! Always ground
 End
 {%- for signal in signals %}
