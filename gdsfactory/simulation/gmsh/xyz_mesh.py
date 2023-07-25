@@ -6,6 +6,7 @@ import numpy as np
 from shapely.geometry import Polygon
 from shapely.ops import unary_union
 
+import gdsfactory as gf
 from gdsfactory.config import get_number_of_cores
 from gdsfactory.simulation.gmsh.parse_component import bufferize
 from gdsfactory.simulation.gmsh.parse_gds import cleanup_component
@@ -157,8 +158,6 @@ def xyz_mesh(
 
 
 if __name__ == "__main__":
-    import gdsfactory as gf
-
     from gdsfactory.pdk import get_layer_stack
     from gdsfactory.generic_tech import LAYER
 
