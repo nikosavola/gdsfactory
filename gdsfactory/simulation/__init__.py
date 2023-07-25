@@ -4,6 +4,10 @@ from __future__ import annotations
 
 from gdsfactory.simulation import plot
 from gdsfactory.simulation.get_effective_indices import get_effective_indices
+from gdsfactory.simulation.get_capacitance import (
+    get_capacitance_elmer,
+    get_capacitance_palace,
+)
 from gdsfactory.simulation.get_sparameters_path import (
     get_sparameters_data_lumerical,
     get_sparameters_data_meep,
@@ -22,4 +26,6 @@ __all__ = [
     "get_sparameters_data_lumerical",
     "get_sparameters_data_tidy3d",
     "get_effective_indices",
+    "get_capacitance_elmer",
+    "get_capacitance_palace",
 ]

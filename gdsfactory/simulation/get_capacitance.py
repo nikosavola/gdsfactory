@@ -13,9 +13,9 @@ from gdsfactory.name import clean_value
 from gdsfactory.pdk import get_sparameters_path
 from gdsfactory.typings import ComponentSpec
 from gdsfactory.simulation.elmer.get_capacitance import run_capacitive_simulation_elmer
-from gdsfactory.simulation.palace.get_capacitance import run_capacitive_simulation_palace
-
-
+from gdsfactory.simulation.palace.get_capacitance import (
+    run_capacitive_simulation_palace,
+)
 
 
 get_capacitance_elmer = partial(run_capacitive_simulation_elmer, tool="elmer")
