@@ -791,6 +791,13 @@ def get_constant(constant_name: Any) -> Any:
     )
 
 
+def get_capacitance_path() -> pathlib.Path:
+    PDK = get_active_pdk()
+    if PDK.capacitance_path is None:
+        raise ValueError(f"{_ACTIVE_PDK.name!r} has no capacitance_path")
+    return PDK.capacitance_path
+
+
 def get_sparameters_path() -> pathlib.Path:
     PDK = get_active_pdk()
     if PDK.sparameters_path is None:
