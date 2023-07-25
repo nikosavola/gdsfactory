@@ -1,62 +1,32 @@
 from __future__ import annotations
 
+import itertools
 import shutil
 import subprocess
-import itertools
 from math import inf
 from pathlib import Path
-from typing import Dict, Any, Tuple, Optional, Iterable, Sequence
+from tempfile import TemporaryDirectory
+from typing import Any, Dict, Iterable, Optional, Sequence
 
 import gmsh
-from pandas import read_csv
-from numpy import isfinite
 from jinja2 import Environment, FileSystemLoader
-from pydantic import BaseModel
+from numpy import isfinite
+from pandas import read_csv
 
 import gdsfactory as gf
 from gdsfactory.components import interdigital_capacitor_enclosed
 from gdsfactory.generic_tech import LAYER_STACK
 from gdsfactory.technology import LayerStack
-from gdsfactory.typings import MaterialSpec
+from gdsfactory.typings import ElectrostaticResults, MaterialSpec
 
 ELECTROSTATIC_SIF = "electrostatic.sif"
 ELECTROSTATIC_TEMPLATE = Path(__file__).parent / f"{ELECTROSTATIC_SIF}.j2"
-
-# TODO put to typings?
-CDict = Dict[Tuple[str, str], float]
-
-
-class ElectrostaticResults(BaseModel):
-    """Results class for electrostatic simulations."""
-
-    capacitance_matrix: CDict  # List[List[float]]  # TODO CDICT
-    mesh_location: Path
-    field_file_location: Optional[Path] = None
-
-    # TODO uncomment after move to pydantic v2
-    # @computed_field
-    # @cached_property
-    # def raw_capacitance_matrix(self) -> ndarray:
-    #     n = int(sqrt(len(self.capacitance_matrix)))
-    #     matrix = zeros((n, n))
-
-    #     port_to_index_map = {}
-    #     for iname, jname in self.capacitance_matrix.keys():
-    #         if iname not in port_to_index_map:
-    #             port_to_index_map[iname] = len(port_to_index_map) + 1
-    #         if jname not in port_to_index_map:
-    #             port_to_index_map[jname] = len(port_to_index_map) + 1
-
-    #     for (iname, jname), c in self.capacitance_matrix.items():
-    #         matrix[port_to_index_map[iname], port_to_index_map[jname]] = c
-
-    #     return matrix
 
 
 def _generate_sif(
     simulation_folder: Path,
     name: str,
-    signals: Sequence[str],
+    signals: Sequence[Sequence[str]],
     bodies: Dict[str, Dict[str, Any]],
     ground_layers: Iterable[str],
     layer_stack: LayerStack,
@@ -152,6 +122,7 @@ def _read_elmer_results(
     mesh_filename: str,
     n_processes: int,
     ports: Iterable[str],
+    is_temporary: bool,
 ) -> ElectrostaticResults:
     """Fetch results from successful Elmer simulations."""
     raw_name = Path(mesh_filename).stem
@@ -168,14 +139,20 @@ def _read_elmer_results(
                 enumerate(ports), enumerate(ports)
             )
         },
-        mesh_location=simulation_folder / mesh_filename,
-        field_file_location=simulation_folder
-        / raw_name
-        / f'{raw_name}_t0001.{"pvtu" if n_processes > 1 else "vtu"}',
+        **(
+            {}
+            if is_temporary
+            else dict(
+                mesh_location=simulation_folder / mesh_filename,
+                field_file_location=simulation_folder
+                / raw_name
+                / f'{raw_name}_t0001.{"pvtu" if n_processes > 1 else "vtu"}',
+            )
+        ),
     )
 
 
-def run_capacitive_simulation(
+def run_capacitive_simulation_elmer(
     component: gf.Component,
     element_order: int = 1,
     n_processes: int = 1,
@@ -185,8 +162,9 @@ def run_capacitive_simulation(
     mesh_parameters: Optional[Dict[str, Any]] = None,
 ) -> ElectrostaticResults:
     """Run electrostatic finite element method simulations using
-    `Elmer`_.
-    Returns the field solution and resulting capacitance matrix.
+    `Elmer`_.     Returns the field solution and resulting capacitance matrix.
+
+    .. note:: You should have `ElmerGrid`, `ElmerSolver` and `ElmerSolver_mpi` and in your PATH.
 
     Args:
         component: Simulation environment as a gdsfactory component.
@@ -213,8 +191,7 @@ def run_capacitive_simulation(
             layers={
                 k: LAYER_STACK.layers[k]
                 for k in (
-                    "core",  # metal
-                    # "ground",
+                    "core",
                     "substrate",
                     "box",
                 )
@@ -223,12 +200,12 @@ def run_capacitive_simulation(
     if material_spec is None:
         material_spec: MaterialSpec = {
             "si": {"relative_permittivity": 11.45},
-            "sio2": {"relative_permittivity": 1},  # vacuum
-            "vacuum": {"relative_permittivity": 1},  # vacuum
+            "sio2": {"relative_permittivity": 1},
+            "vacuum": {"relative_permittivity": 1},
         }
 
-    # TODO use TemporaryDirectory if simulation_folder not specified
-    simulation_folder = Path(simulation_folder or (Path(__file__).parent / "temp"))
+    temp_dir = TemporaryDirectory()
+    simulation_folder = Path(simulation_folder or temp_dir.name)
     simulation_folder.mkdir(exist_ok=True, parents=True)
 
     filename = component.name + ".msh"
@@ -243,8 +220,7 @@ def run_capacitive_simulation(
     gmsh.merge(str(simulation_folder / filename))
     mesh_surface_entities = [
         gmsh.model.getPhysicalName(*dimtag)
-        for dimtag in gmsh.model.getPhysicalGroups()
-        if dimtag[0] == 2
+        for dimtag in gmsh.model.getPhysicalGroups(dim=2)
     ]
     gmsh.finalize()
 
@@ -259,10 +235,13 @@ def run_capacitive_simulation(
     metal_surfaces = [
         e for e in mesh_surface_entities if any(ground in e for ground in ground_layers)
     ]
-    metal_signal_surfaces = [
-        e for e in metal_surfaces if any(port in e for port in component.ports)
+    # Group signal BCs by ports
+    metal_signal_surfaces_grouped = [
+        [e for e in metal_surfaces if port in e] for port in component.ports
     ]
-    metal_ground_surfaces = set(metal_surfaces) - set(metal_signal_surfaces)
+    metal_ground_surfaces = set(metal_surfaces) - set(
+        itertools.chain.from_iterable(metal_signal_surfaces_grouped)
+    )
 
     ground_layers |= metal_ground_surfaces
 
@@ -278,7 +257,7 @@ def run_capacitive_simulation(
     _generate_sif(
         simulation_folder,
         component.name,
-        metal_signal_surfaces,
+        metal_signal_surfaces_grouped,
         bodies,
         ground_layers,
         layer_stack,
@@ -288,57 +267,90 @@ def run_capacitive_simulation(
     )
     _elmergrid(simulation_folder, filename, n_processes)
     _elmersolver(simulation_folder, filename, n_processes)
-    return _read_elmer_results(
-        simulation_folder, filename, n_processes, component.ports
+    results = _read_elmer_results(
+        simulation_folder,
+        filename,
+        n_processes,
+        component.ports,
+        is_temporary=str(simulation_folder) == temp_dir.name,
     )
+    temp_dir.cleanup()
+    return results
 
 
 if __name__ == "__main__":
     import pyvista as pv
 
-    from gdsfactory.technology.layer_stack import LayerLevel
     from gdsfactory.generic_tech import LAYER
+    from gdsfactory.technology.layer_stack import LayerLevel
 
-    # TODO make the example something functional
-
-    # Example LayerStack values from doi:10.1103/PRXQuantum.4.010314 and
+    # Example LayerStack similar to doi:10.1103/PRXQuantum.4.010314
     layer_stack = LayerStack(
         layers=dict(
             substrate=LayerLevel(
                 layer=LAYER.WAFER,
-                thickness=500e-6,
+                thickness=500,
                 zmin=0,
                 material="Si",
                 mesh_order=99,
             ),
-            vacuum=LayerLevel(
-                layer=LAYER.WAFER,
-                thickness=1000e-6,
-                zmin=500e-6,
-                material="vacuum",
-                mesh_order=99,
-            ),
             metal=LayerLevel(
                 layer=LAYER.WG,
-                thickness=200e-9,
-                zmin=500e-6,
+                thickness=200e-3,
+                zmin=500,
                 material="Nb",
                 mesh_order=2,
-                width_to_z=0.5,
             ),
-            # TODO vacuum in between core
         )
     )
+    material_spec = {
+        "Si": {"relative_permittivity": 11.45},
+        "Nb": {"relative_permittivity": inf},
+        "vacuum": {"relative_permittivity": 1},
+    }
 
-    # Test mesh capacitor
-    c = interdigital_capacitor_enclosed()
-
-    # mesh.get_cells_type("triangle")
-    # mesh = from_meshio(mesh)
-    # mesh.draw().plot()
-    # mesh
-    results = run_capacitive_simulation(c)
+    # Test capacitor
+    simulation_box = [[-200, -200], [200, 200]]
+    c = gf.Component("capacitance_elmer")
+    cap = c << interdigital_capacitor_enclosed(
+        metal_layer=LAYER.WG, gap_layer=LAYER.DEEPTRENCH, enclosure_box=simulation_box
+    )
+    c.add_ports(cap.ports)
+    substrate = gf.components.bbox(bbox=simulation_box, layer=LAYER.WAFER)
+    c << substrate
+    c.flatten()
+    results = run_capacitive_simulation_elmer(
+        c,
+        layer_stack=layer_stack,
+        material_spec=material_spec,
+        mesh_parameters=dict(
+            background_tag="vacuum",
+            background_padding=(0,) * 5 + (700,),
+            portnames=c.ports,
+            verbosity=1,
+            default_characteristic_length=200,
+            layer_portname_delimiter=(delimiter := "__"),
+            resolutions={
+                "bw": {
+                    "resolution": 14,
+                },
+                "substrate": {
+                    "resolution": 50,
+                },
+                "vacuum": {
+                    "resolution": 120,
+                },
+                **{
+                    f"bw{delimiter}{port}": {
+                        "resolution": 8,
+                    }
+                    for port in c.ports
+                },
+            },
+        ),
+    )
     print(results)
 
-    field = pv.read(results.field_file_location)
-    field.plot(scalars="electric field", cmap="turbo")
+    if results.field_file_location:
+        field = pv.read(results.field_file_location)
+        field.slice_orthogonal().plot(scalars="electric field", cmap="turbo")

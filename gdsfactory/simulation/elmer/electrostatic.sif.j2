@@ -99,9 +99,9 @@ Boundary Condition 1
   Target Boundaries({{ ground_layers | length }}) = $ {{ ground_layers | join(' ') }}
   Potential = 0.0  ! Always ground
 End
-{%- for signal in signals %}
+{%- for signal_group in signals %}
 Boundary Condition {{ loop.index + 1 }}
-  Target Boundaries(1) = $ {{ signal }}
+  Target Boundaries({{ signal_group | length }}) = $ {{ signal_group | join(' ') }}
   Capacitance Body = {{ loop.index }}
 End
 {%- endfor %}

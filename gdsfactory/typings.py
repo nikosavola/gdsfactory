@@ -171,6 +171,7 @@ PortsDict = Dict[str, Port]
 PortsList = Dict[str, Port]
 
 Sparameters = Dict[str, np.ndarray]
+CDict = Dict[Tuple[str, str], float]
 
 ComponentSpec = Union[
     str, ComponentFactory, Component, Dict[str, Any]
@@ -308,9 +309,37 @@ class Array(np.ndarray, metaclass=ArrayMeta):
     pass
 
 
+class ElectrostaticResults(BaseModel):
+    """Results class for electrostatic simulations."""
+
+    capacitance_matrix: CDict
+    mesh_location: Optional[pathlib.Path] = None
+    field_file_location: Optional[pathlib.Path] = None
+
+    # TODO uncomment after move to pydantic v2
+    # @computed_field
+    # @cached_property
+    # def raw_capacitance_matrix(self) -> ndarray:
+    #     n = int(sqrt(len(self.capacitance_matrix)))
+    #     matrix = zeros((n, n))
+
+    #     port_to_index_map = {}
+    #     for iname, jname in self.capacitance_matrix.keys():
+    #         if iname not in port_to_index_map:
+    #             port_to_index_map[iname] = len(port_to_index_map) + 1
+    #         if jname not in port_to_index_map:
+    #             port_to_index_map[jname] = len(port_to_index_map) + 1
+
+    #     for (iname, jname), c in self.capacitance_matrix.items():
+    #         matrix[port_to_index_map[iname], port_to_index_map[jname]] = c
+
+    #     return matrix
+
+
 __all__ = (
     "Any",
     "Callable",
+    "CDict",
     "Component",
     "ComponentFactory",
     "ComponentFactoryDict",
@@ -324,6 +353,7 @@ __all__ = (
     "CrossSectionOrFactory",
     "CrossSectionSpec",
     "Dict",
+    "ElectrostaticResults",
     "Float2",
     "Float3",
     "Floats",
@@ -333,10 +363,10 @@ __all__ = (
     "Label",
     "Layer",
     "LayerLevel",
+    "Layers",
     "LayerSpec",
     "LayerSpecs",
     "LayerStack",
-    "Layers",
     "List",
     "MultiCrossSectionAngleSpec",
     "NameToFunctionDict",

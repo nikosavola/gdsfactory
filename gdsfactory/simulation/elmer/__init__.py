@@ -1,5 +1,5 @@
-from gdsfactory.simulation.elmer.get_capacitance import run_capacitive_simulation
+from gdsfactory.simulation.elmer.get_capacitance import run_capacitive_simulation_elmer
 
 __all__ = [
-    "run_capacitive_simulation",
+    "run_capacitive_simulation_elmer",
 ]
