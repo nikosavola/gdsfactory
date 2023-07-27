@@ -1,21 +1,14 @@
-import hashlib
-import pathlib
-import tempfile
 from functools import partial
 from pathlib import Path
-from typing import Dict, Any, Mapping, Tuple, Optional, Iterable, Sequence
-
-import numpy as np
-from pydantic import BaseModel
+from typing import Any, Mapping, Optional
 
 import gdsfactory as gf
-from gdsfactory.name import clean_value
-from gdsfactory.pdk import get_sparameters_path, get_capacitance_path
-from gdsfactory.typings import ComponentSpec, ElectrostaticResults
+from gdsfactory.pdk import get_capacitance_path
 from gdsfactory.simulation.elmer.get_capacitance import run_capacitive_simulation_elmer
 from gdsfactory.simulation.palace.get_capacitance import (
     run_capacitive_simulation_palace,
 )
+from gdsfactory.typings import ComponentSpec, ElectrostaticResults
 
 
 def get_capacitance(
@@ -52,11 +45,17 @@ def get_capacitance(
     match simulator:
         case "elmer":
             return run_capacitive_simulation_elmer(
-                component, simulation_folder=simulation_folder, **kwargs
+                component,
+                simulation_folder=simulation_folder,
+                simulator_params=simulator_params,
+                **kwargs,
             )
         case "palace":
             return run_capacitive_simulation_palace(
-                component, simulation_folder=simulation_folder, **kwargs
+                component,
+                simulation_folder=simulation_folder,
+                simulator_params=simulator_params,
+                **kwargs,
             )
         case _:
             raise UserWarning(f"{simulator=!r} not implemented!")
