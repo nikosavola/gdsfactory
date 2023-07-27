@@ -7,7 +7,7 @@ import subprocess
 from math import inf
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any, Dict, Iterable, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, Optional, Sequence, Tuple, Mapping
 
 import gmsh
 from numpy import isfinite
@@ -34,6 +34,7 @@ def _generate_json(
     element_order: int,
     physical_name_to_dimtag_map: Dict[str, Tuple[int, int]],
     background_tag: Optional[str] = None,
+    simulator_params: Optional[Mapping[str, Any]] = None,
 ):
     # pylint: disable=unused-argument
     """Generates a json file for Palace simulations using."""
@@ -89,6 +90,8 @@ def _generate_json(
 
     palace_json_data["Solver"]["Order"] = element_order
     palace_json_data["Solver"]["Electrostatic"]["Save"] = len(signals)
+    if simulator_params is not None:
+        palace_json_data["Solver"]["Linear"] |= simulator_params
 
     with open(simulation_folder / f"{name}.json", "w", encoding="utf-8") as fp:
         json.dump(palace_json_data, fp, indent=4)
@@ -155,6 +158,7 @@ def run_capacitive_simulation_palace(
     layer_stack: Optional[LayerStack] = None,
     material_spec: Optional[MaterialSpec] = None,
     simulation_folder: Optional[Path | str] = None,
+    simulator_params: Optional[Mapping[str, Any]] = None,
     mesh_parameters: Optional[Dict[str, Any]] = None,
 ) -> ElectrostaticResults:
     """Run electrostatic finite element method simulations using
@@ -177,6 +181,8 @@ def run_capacitive_simulation_palace(
         simulation_folder:
             Directory for storing the simulation results.
             Default is a temporary directory.
+        simulator_params: Palace-specific parameters. This will be expanded to solver["Linear"] in
+            the Palace config, see `Palace documentation <https://awslabs.github.io/palace/stable/config/solver/#solver[%22Linear%22]>`_
         mesh_parameters:
             Keyword arguments to provide to :func:`~Component.to_gmsh`.
 
@@ -272,6 +278,7 @@ def run_capacitive_simulation_palace(
         element_order,
         physical_name_to_dimtag_map,
         background_tag,
+        simulator_params,
     )
     _palace(simulation_folder, filename, n_processes)
     results = _read_palace_results(
