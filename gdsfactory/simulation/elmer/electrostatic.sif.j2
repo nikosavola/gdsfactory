@@ -29,18 +29,18 @@ Solver 1
   Vector Assembly = True
   Element = p:{{ element_order }}
 
-  Steady State Convergence Tolerance = 1.0e-5
-  Nonlinear System Max Iterations = 20
+  Steady State Convergence Tolerance = {{ simulator_params["steady_state_convergence_tolerance"] | default("1e-5", true) }}
+  Nonlinear System Max Iterations = {{ simulator_params["nonlinear_system_max_iterations"] | default(20, true) }}
   Nonlinear System Consistent Norm = True
-  Nonlinear System Convergence Tolerance = 1.0e-7
-  Nonlinear System Newton After Iterations = 3
-  Nonlinear System Newton After Tolerance = 1e-2
+  Nonlinear System Convergence Tolerance = {{ simulator_params["nonlinear_system_convergence_tolerance"] | default("1e-7", true) }}
+  Nonlinear System Newton After Iterations = {{ simulator_params["nonlinear_system_newton_after_iterations"] | default(4, true) }}
+  Nonlinear System Newton After Tolerance = {{ simulator_params["nonlinear_system_newton_after_tolerance"] | default("1e-2", true) }}
   Nonlinear System Relaxation Factor = 1
 
   Linear System Solver = Iterative
   Linear System Iterative Method = GCR
-  Linear System Max Iterations = 30
-  Linear System Convergence Tolerance = 1.0e-13
+  Linear System Max Iterations = {{ simulator_params["linear_system_max_iterations"] | default(30, true) }}
+  Linear System Convergence Tolerance = {{ simulator_params["linear_system_convergence_tolerance"] | default("1e-13", true) }}
   Linear System Abort Not Converged = False
   Linear System Residual Output = 10
   Linear System Preconditioning = multigrid

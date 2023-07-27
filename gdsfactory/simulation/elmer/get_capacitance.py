@@ -6,7 +6,7 @@ import subprocess
 from math import inf
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any, Dict, Iterable, Optional, Sequence
+from typing import Any, Dict, Iterable, Mapping, Optional, Sequence
 
 import gmsh
 from jinja2 import Environment, FileSystemLoader
@@ -33,6 +33,7 @@ def _generate_sif(
     material_spec: MaterialSpec,
     element_order: int,
     background_tag: Optional[str] = None,
+    simulator_params: Optional[Mapping[str, Any]] = None,
 ):
     # pylint: disable=unused-argument
     """Generates a sif file for Elmer simulations using Jinja2."""
@@ -159,6 +160,7 @@ def run_capacitive_simulation_elmer(
     layer_stack: Optional[LayerStack] = None,
     material_spec: Optional[MaterialSpec] = None,
     simulation_folder: Optional[Path | str] = None,
+    simulator_params: Optional[Mapping[str, Any]] = None,
     mesh_parameters: Optional[Dict[str, Any]] = None,
 ) -> ElectrostaticResults:
     """Run electrostatic finite element method simulations using
@@ -180,6 +182,7 @@ def run_capacitive_simulation_elmer(
         simulation_folder:
             Directory for storing the simulation results.
             Default is a temporary directory.
+        simulator_params: Elmer-specific parameters. See template file for more details.
         mesh_parameters:
             Keyword arguments to provide to :func:`~Component.to_gmsh`.
 
@@ -264,6 +267,7 @@ def run_capacitive_simulation_elmer(
         material_spec,
         element_order,
         background_tag,
+        simulator_params,
     )
     _elmergrid(simulation_folder, filename, n_processes)
     _elmersolver(simulation_folder, filename, n_processes)
