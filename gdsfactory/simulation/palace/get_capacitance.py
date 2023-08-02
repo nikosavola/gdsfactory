@@ -39,9 +39,9 @@ def _generate_json(
     # pylint: disable=unused-argument
     """Generates a json file for Palace simulations using."""
     # TODO: Generalise to merger with the Elmer implementations"""
-    used_materials = {v.material for v in layer_stack.layers.values()} | {
-        background_tag or set()
-    }
+    used_materials = {v.material for v in layer_stack.layers.values()} | (
+        {background_tag} if background_tag else {}
+    )
     used_materials = {
         k: material_spec[k]
         for k in used_materials
@@ -160,6 +160,7 @@ def run_capacitive_simulation_palace(
     simulation_folder: Optional[Path | str] = None,
     simulator_params: Optional[Mapping[str, Any]] = None,
     mesh_parameters: Optional[Dict[str, Any]] = None,
+    mesh_file: Optional[Path | str] = None,
 ) -> ElectrostaticResults:
     """Run electrostatic finite element method simulations using
     `Palace`_.
@@ -181,10 +182,12 @@ def run_capacitive_simulation_palace(
         simulation_folder:
             Directory for storing the simulation results.
             Default is a temporary directory.
-        simulator_params: Palace-specific parameters. This will be expanded to solver["Linear"] in
+        simulator_params: Palace-specific parameters. This will be expanded to ``solver["Linear"]`` in
             the Palace config, see `Palace documentation <https://awslabs.github.io/palace/stable/config/solver/#solver[%22Linear%22]>`_
         mesh_parameters:
             Keyword arguments to provide to :func:`~Component.to_gmsh`.
+        mesh_file: Path to a ready mesh to use. Useful for reusing one mesh file.
+            By default a mesh is generated according to ``mesh_parameters``.
 
     .. _Palace https://github.com/awslabs/palace
     """
@@ -212,17 +215,19 @@ def run_capacitive_simulation_palace(
     simulation_folder.mkdir(exist_ok=True, parents=True)
 
     filename = component.name + ".msh"
-    component.to_gmsh(
-        type="3D",
-        filename=simulation_folder / filename,
-        layer_stack=layer_stack,
-        gmsh_version=2.2,  # see https://mfem.org/mesh-formats/#gmsh-mesh-formats
-        **(mesh_parameters or {}),
-    )
-    # gmsh.finalize()
+    if mesh_file:
+        shutil.copyfile(str(mesh_file), str(simulation_folder / filename))
+    else:
+        component.to_gmsh(
+            type="3D",
+            filename=simulation_folder / filename,
+            layer_stack=layer_stack,
+            gmsh_version=2.2,  # see https://mfem.org/mesh-formats/#gmsh-mesh-formats
+            **(mesh_parameters or {}),
+        )
 
     # re-read the mesh
-    gmsh.initialize()
+    gmsh.initialize(interruptible=False)
     gmsh.merge(str(simulation_folder / filename))
     mesh_surface_entities = {
         gmsh.model.getPhysicalName(*dimtag)
@@ -257,7 +262,7 @@ def run_capacitive_simulation_palace(
         for k, v in layer_stack.layers.items()
         if port_delimiter not in k and k not in ground_layers
     }
-    if background_tag := (mesh_parameters or {}).get("background_tag", None):
+    if background_tag := (mesh_parameters or {}).get("background_tag", "vacuum"):
         bodies = {**bodies, background_tag: {"material": background_tag}}
 
     # TODO refactor to not require this map, the same information could be transferred with the variables above
@@ -356,7 +361,7 @@ if __name__ == "__main__":
                     "resolution": 120,
                 },
                 **{
-                    f"bw{delimiter}{port}": {
+                    f"bw{delimiter}{port}_vacuum": {
                         "resolution": 8,
                     }
                     for port in c.ports

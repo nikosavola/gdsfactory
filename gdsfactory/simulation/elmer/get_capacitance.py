@@ -37,9 +37,9 @@ def _generate_sif(
 ):
     # pylint: disable=unused-argument
     """Generates a sif file for Elmer simulations using Jinja2."""
-    used_materials = {v.material for v in layer_stack.layers.values()} | {
-        background_tag or set()
-    }
+    used_materials = {v.material for v in layer_stack.layers.values()} | (
+        {background_tag} if background_tag else {}
+    )
     used_materials = {
         k: material_spec[k]
         for k in used_materials
@@ -162,6 +162,7 @@ def run_capacitive_simulation_elmer(
     simulation_folder: Optional[Path | str] = None,
     simulator_params: Optional[Mapping[str, Any]] = None,
     mesh_parameters: Optional[Dict[str, Any]] = None,
+    mesh_file: Optional[Path | str] = None,
 ) -> ElectrostaticResults:
     """Run electrostatic finite element method simulations using
     `Elmer`_.     Returns the field solution and resulting capacitance matrix.
@@ -185,6 +186,8 @@ def run_capacitive_simulation_elmer(
         simulator_params: Elmer-specific parameters. See template file for more details.
         mesh_parameters:
             Keyword arguments to provide to :func:`~Component.to_gmsh`.
+        mesh_file: Path to a ready mesh to use. Useful for reusing one mesh file.
+            By default a mesh is generated according to ``mesh_parameters``.
 
     .. _Elmer https://github.com/ElmerCSC/elmerfem
     """
@@ -212,14 +215,17 @@ def run_capacitive_simulation_elmer(
     simulation_folder.mkdir(exist_ok=True, parents=True)
 
     filename = component.name + ".msh"
-    component.to_gmsh(
-        type="3D",
-        filename=simulation_folder / filename,
-        layer_stack=layer_stack,
-        **(mesh_parameters or {}),
-    )
+    if mesh_file:
+        shutil.copyfile(str(mesh_file), str(simulation_folder / filename))
+    else:
+        component.to_gmsh(
+            type="3D",
+            filename=simulation_folder / filename,
+            layer_stack=layer_stack,
+            **(mesh_parameters or {}),
+        )
 
-    gmsh.initialize()
+    gmsh.initialize(interruptible=False)
     gmsh.merge(str(simulation_folder / filename))
     mesh_surface_entities = [
         gmsh.model.getPhysicalName(*dimtag)
@@ -254,7 +260,7 @@ def run_capacitive_simulation_elmer(
         for k, v in layer_stack.layers.items()
         if port_delimiter not in k and k not in ground_layers
     }
-    if background_tag := (mesh_parameters or {}).get("background_tag", None):
+    if background_tag := (mesh_parameters or {}).get("background_tag", "vacuum"):
         bodies = {**bodies, background_tag: {"material": background_tag}}
 
     _generate_sif(

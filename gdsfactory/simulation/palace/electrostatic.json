@@ -1,7 +1,7 @@
 {
   "Problem": {
     "Type": "Electrostatic",
-    "Verbose": 2,
+    "Verbose": 3,
     "Output": "postpro"
   },
   "Model": {
