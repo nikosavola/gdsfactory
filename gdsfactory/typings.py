@@ -336,6 +336,21 @@ class ElectrostaticResults(BaseModel):
     #     return matrix
 
 
+class DrivenFullWaveResults(BaseModel):
+    """Results class for driven full-wave simulations."""
+
+    scattering_matrix: SDict
+    mesh_location: Optional[pathlib.Path] = None
+    field_file_location: Optional[pathlib.Path] = None
+
+    # TODO uncomment after move to pydantic v2
+    # @computed_field
+    # @cached_property
+    # def raw_capacitance_matrix(self) -> ndarray:
+    # TODO copy from or DRY to another helper allow scattering matrix
+    #     return ElectrostaticResults.raw_capacitance_matrix(self)
+
+
 __all__ = (
     "Any",
     "Callable",
@@ -353,6 +368,7 @@ __all__ = (
     "CrossSectionOrFactory",
     "CrossSectionSpec",
     "Dict",
+    "DrivenFullWaveResults",
     "ElectrostaticResults",
     "Float2",
     "Float3",

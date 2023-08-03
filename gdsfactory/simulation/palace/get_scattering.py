@@ -17,10 +17,10 @@ import gdsfactory as gf
 from gdsfactory.components import interdigital_capacitor_enclosed
 from gdsfactory.generic_tech import LAYER_STACK
 from gdsfactory.technology import LayerStack
-from gdsfactory.typings import ElectrostaticResults, MaterialSpec
+from gdsfactory.typings import DrivenFullWaveResults, MaterialSpec
 
-ELECTROSTATIC_JSON = "electrostatic.json"
-ELECTROSTATIC_TEMPLATE = Path(__file__).parent / ELECTROSTATIC_JSON
+DRIVE_JSON = "driven.json"
+DRIVEN_TEMPLATE = Path(__file__).parent / ELECTROSTATIC_JSON
 
 
 def _generate_json(
@@ -35,8 +35,9 @@ def _generate_json(
     physical_name_to_dimtag_map: Dict[str, Tuple[int, int]],
     background_tag: Optional[str] = None,
     simulator_params: Optional[Mapping[str, Any]] = None,
+    driven_settings: Optional[Mapping[str, float | int | bool]] = None
 ):
-    """Generates a json file for capacitive Palace simulations."""
+    """Generates a json file for full-wave Palace simulations."""
     # TODO: Generalise to merger with the Elmer implementations"""
     used_materials = {v.material for v in layer_stack.layers.values()} | (
         {background_tag} if background_tag else {}
@@ -47,7 +48,7 @@ def _generate_json(
         if isfinite(material_spec[k].get("relative_permittivity", inf))
     }
 
-    with open(ELECTROSTATIC_TEMPLATE, "r") as fp:
+    with open(DRIVEN_TEMPLATE, "r") as fp:
         palace_json_data = json.load(fp)
 
     material_to_attributes_map = {
@@ -59,36 +60,69 @@ def _generate_json(
         {
             "Attributes": [material_to_attributes_map.get(material, None)],
             "Permittivity": props["relative_permittivity"],
+            "Permeability": props["relative_permeability"],
+            "LossTan": props.get("loss_tangent", 0.),
+            "Conductivity": props.get("condcutivity", 0.),
         }
         for material, props in used_materials.items()
     ]
+    #TODO list here attributes that contained LossTAN
+    # palace_json_data["Domains"]["Postprocessing"]["Dielectric"] = [
+
+    # ]
+
     # TODO 3d volumes as pec???, not needed for capacitance
-    # palace_json_data['Boundaries']['PEC'] = {
-    #     'Attributes': [
-    #         physical_name_to_dimtag_map[pec][1] for pec in
-    #         (set(k for k, v in physical_name_to_dimtag_map.items() if v[0] == 3) - set(bodies) -
-    #          set(ground_layers))  # TODO same in Elmer??
-    #     ]
-    # }
-    palace_json_data["Boundaries"]["Ground"] = {
-        "Attributes": [physical_name_to_dimtag_map[layer][1] for layer in ground_layers]
+    palace_json_data['Boundaries']['PEC'] = {
+        # 'Attributes': [
+        #     physical_name_to_dimtag_map[pec][1] for pec in
+        #     (set(k for k, v in physical_name_to_dimtag_map.items() if v[0] == 3) - set(bodies) -
+        #      set(ground_layers))  # TODO same in Elmer??
+        # ]
     }
-    palace_json_data["Boundaries"]["Terminal"] = [
-        {
-            "Index": i,
-            "Attributes": [
-                physical_name_to_dimtag_map[signal][1] for signal in signal_group
-            ],
-        }
-        for i, signal_group in enumerate(signals, 1)
+    palace_json_data["Boundaries"]["PEC"] = {
+        "Attributes": [physical_name_to_dimtag_map[layer][1] for layer in ground_layers] # TODO + all metal traces etc
+    }
+    palace_json_data["Boundaries"]["WavePort"] = [
+      {
+        "Index": 1,
+        "Attributes": [5],
+        "Mode": 1,
+        "Offset": 0.0,
+        "Excitation": True
+      },
+      {
+        "Index": 2,
+        "Attributes": [6],
+        "Mode": 1,
+        "Offset": 0.0
+      },
+        # {
+        #     "Index": i,
+        #     "Attributes": [
+        #         physical_name_to_dimtag_map[signal][1] for signal in signal_group
+        #     ],
+        # }
+        # for i, signal_group in enumerate(signals, 1)
     ]
-    # TODO try do we get energy method without this??
-    palace_json_data["Boundaries"]["Postprocessing"]["Capacitance"] = palace_json_data[
-        "Boundaries"
-    ]["Terminal"]
+    # Farfield surface
+    palace_json_data["Boundaries"]["Absorbing"] = {
+      "Attributes": [10], # TODO get farfield _None etc
+      "Order": 1
+    }
+    # palace_json_data["Boundaries"]["Postprocessing"]["Dielectric"] =       [
+    #     {
+    #       "Index": 1,
+    #       "Attributes": [3], # these two same as above if losstan
+    #       "Side": "+Z",
+    #       "Thickness": 2e-3, # need metadata for oxide layer thickness
+    #       "PermittivitySA": 4.0,
+    #       "LossTan": 1.0
+    #     }
+    #   ]
 
     palace_json_data["Solver"]["Order"] = element_order
-    palace_json_data["Solver"]["Electrostatic"]["Save"] = len(signals)
+    if driven_settings is not None:
+        palace_json_data["Solver"]["Driven"] |= driven_settings
     if simulator_params is not None:
         palace_json_data["Solver"]["Linear"] |= simulator_params
 
@@ -158,6 +192,7 @@ def run_capacitive_simulation_palace(
     material_spec: Optional[MaterialSpec] = None,
     simulation_folder: Optional[Path | str] = None,
     simulator_params: Optional[Mapping[str, Any]] = None,
+    driven_settings: Optional[Mapping[str, float | int | bool]] = None
     mesh_parameters: Optional[Dict[str, Any]] = None,
     mesh_file: Optional[Path | str] = None,
 ) -> ElectrostaticResults:
@@ -183,6 +218,8 @@ def run_capacitive_simulation_palace(
             Default is a temporary directory.
         simulator_params: Palace-specific parameters. This will be expanded to ``solver["Linear"]`` in
             the Palace config, see `Palace documentation <https://awslabs.github.io/palace/stable/config/solver/#solver[%22Linear%22]>`_
+        driven_settings: Driven full-wave parameters in Palace. This will be expanded to ``solver["Driven"]`` in
+            the Palace config, see `Palace documentation <https://awslabs.github.io/palace/stable/config/solver/#solver[%22Driven%22]>`_
         mesh_parameters:
             Keyword arguments to provide to :func:`~Component.to_gmsh`.
         mesh_file: Path to a ready mesh to use. Useful for reusing one mesh file.
@@ -283,6 +320,7 @@ def run_capacitive_simulation_palace(
         physical_name_to_dimtag_map,
         background_tag,
         simulator_params,
+        driven_settings,
     )
     _palace(simulation_folder, filename, n_processes)
     results = _read_palace_results(
