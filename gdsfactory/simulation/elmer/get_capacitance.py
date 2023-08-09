@@ -333,6 +333,10 @@ if __name__ == "__main__":
         c,
         layer_stack=layer_stack,
         material_spec=material_spec,
+        # DEBUG
+        # simulator_params={'adaptive_meshing_iterations': 2},
+        simulation_folder=Path(__file__).parent / 'tmp_adapt',
+
         mesh_parameters=dict(
             background_tag="vacuum",
             background_padding=(0,) * 5 + (700,),

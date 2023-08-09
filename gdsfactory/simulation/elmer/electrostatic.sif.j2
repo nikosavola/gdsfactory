@@ -6,6 +6,14 @@ Header
   Mesh DB "." "{{ name }}"
 End
 
+{% if simulator_params['adaptive_meshing_iterations'] | default(false, true) %}
+! Adaptive meshing is implemented through this, see https://github.com/elmercsc/elmerfem/blob/devel/fem/tests/StatElecSolveVecMMG3D/case.sif
+Run Control
+  Run Control Iterations = {{ simulator_params['adaptive_meshing_iterations'] }}
+  Reset Adaptive Mesh = Logical True
+End 
+{% endif -%}
+
 Simulation
   Max Output Level = 3
   Coordinate System = Cartesian 3D
@@ -56,6 +64,21 @@ Solver 1
   mglowest: Linear System Preconditioning = none
   mglowest: Linear System Max Iterations = 100
   mglowest: Linear System Convergence Tolerance = 1.0e-5
+
+{% if simulator_params['adaptive_meshing_iterations'] | default(false, true) %}
+  Constraint Modes Analysis = Logical True
+  Constraint Modes Lumped = Logical True
+  !Constraint Modes Fluxes = Logical True
+  !Constraint Modes Fluxes Symmetric = Logical True
+  Run Control Constraint Modes = Logical True
+
+  Adaptive Mesh Refinement = True
+  Adaptive Remesh = True
+  Adaptive Error Limit = {{ simulator_params["adaptive_meshing_error_limit"] | default("0.01", true) }}
+  Adaptive Remesh Use MMG = Logical True
+  Adaptive Mesh Numbering = Logical False
+{% endif -%}
+
 End
 
 Solver 2
