@@ -4,14 +4,15 @@ import itertools
 import json
 import shutil
 import subprocess
+import re
 from math import inf
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any, Dict, Iterable, Optional, Sequence, Tuple, Mapping
 
 import gmsh
+import pandas as pd
 from numpy import isfinite
-from pandas import read_csv
 
 import gdsfactory as gf
 from gdsfactory.components import interdigital_capacitor_enclosed
@@ -26,8 +27,6 @@ DRIVEN_TEMPLATE = Path(__file__).parent / DRIVE_JSON
 def _generate_json(
     simulation_folder: Path,
     name: str,
-    edge_signals: Sequence[Sequence[str]],
-    internal_signals: Sequence[Sequence[str]],
     bodies: Dict[str, Dict[str, Any]],
     absorbing_surfaces: Sequence[str],
     layer_stack: LayerStack,
@@ -36,9 +35,12 @@ def _generate_json(
     physical_name_to_dimtag_map: Dict[str, Tuple[int, int]],
     metal_surfaces: Sequence[str],
     background_tag: Optional[str] = None,
+    edge_signals: Optional[Sequence[Sequence[str]]] = None,
+    internal_signals: Optional[Sequence[Sequence[str]]] = None,
     simulator_params: Optional[Mapping[str, Any]] = None,
     driven_settings: Optional[Mapping[str, float | int | bool]] = None,
-):
+    adaptive_mesh_iterations: Optional[int] = None,
+) -> List[Path]:
     """Generates a json file for full-wave Palace simulations."""
     # TODO: Generalise to merger with the Elmer implementations"""
     used_materials = {v.material for v in layer_stack.layers.values()} | (
@@ -58,55 +60,43 @@ def _generate_json(
     }
 
     palace_json_data["Model"]["Mesh"] = f"{name}.msh"
+    if adaptive_mesh_iterations:
+        palace_json_data["Model"]["Refinement"] = {}
+        palace_json_data["Model"]["Refinement"][
+            "UniformLevels"
+        ] = adaptive_mesh_iterations
     palace_json_data["Domains"]["Materials"] = [
         {
             "Attributes": [material_to_attributes_map.get(material, None)],
             "Permittivity": props["relative_permittivity"],
             "Permeability": props["relative_permeability"],
-            "LossTan": props.get("loss_tangent", 0.),
-            "Conductivity": props.get("conductivity", 0.),
+            "LossTan": props.get("loss_tangent", 0.0),
+            "Conductivity": props.get("conductivity", 0.0),
         }
         for material, props in used_materials.items()
     ]
-    #TODO list here attributes that contained LossTAN
+    # TODO list here attributes that contained LossTAN
     # palace_json_data["Domains"]["Postprocessing"]["Dielectric"] = [
 
     # ]
 
     # TODO 3d volumes as pec???, not needed for capacitance
     palace_json_data["Boundaries"]["PEC"] = {
-        "Attributes": [physical_name_to_dimtag_map[layer][1] for layer in metal_surfaces] # TODO
+        "Attributes": [
+            physical_name_to_dimtag_map[layer][1]
+            for layer in set(metal_surfaces)
+            - set(itertools.chain.from_iterable(edge_signals or []))
+            - set(itertools.chain.from_iterable(internal_signals or []))
+            - set(absorbing_surfaces or [])
+        ]
     }
-    port_i = 1
-    if edge_signals:
-        palace_json_data["Boundaries"]["WavePort"] = [
-        {
-            "Index": (port_i := port_i + 1),
-            "Attributes": [
-                physical_name_to_dimtag_map[signal][1] for signal in signal_group
-            ],
-            "Mode": 1,
-            "Offset": 0.0,
-            "Excitation": True
-        } for signal_group in edge_signals
-        ]
-    if internal_signals:
-        palace_json_data["Boundaries"]["LumpedPort"] = [
-        {
-            "Index": (port_i := port_i + 1),
-            "Attributes": [
-                physical_name_to_dimtag_map[signal][1] for signal in signal_group
-            ],
-            "Excitation": True,
-            "R": 50,
-        } for signal_group in internal_signals
-        ]
+
     # Farfield surface
     palace_json_data["Boundaries"]["Absorbing"] = {
-      "Attributes": [
-                physical_name_to_dimtag_map[e][1] for e in absorbing_surfaces
-            ], # TODO get farfield _None etc
-      "Order": 1
+        "Attributes": [
+            physical_name_to_dimtag_map[e][1] for e in absorbing_surfaces
+        ],  # TODO get farfield _None etc
+        "Order": 1,
     }
     # palace_json_data["Boundaries"]["Postprocessing"]["Dielectric"] =       [
     #     {
@@ -125,52 +115,125 @@ def _generate_json(
     if simulator_params is not None:
         palace_json_data["Solver"]["Linear"] |= simulator_params
 
-    with open(simulation_folder / f"{name}.json", "w", encoding="utf-8") as fp:
-        json.dump(palace_json_data, fp, indent=4)
+    # need one simulation per port to excite, see https://github.com/awslabs/palace/issues/81
+    jsons = []
+    for port in itertools.chain(edge_signals or [], internal_signals or []):
+        port_i = 0
+        if edge_signals:
+            palace_json_data["Boundaries"]["WavePort"] = [
+                {
+                    "Index": (port_i := port_i + 1),
+                    "Attributes": [
+                        physical_name_to_dimtag_map[signal][1]
+                        for signal in signal_group
+                    ],
+                    "Excitation": port
+                    == signal_group,  # Only one port needs excitation
+                    "Mode": 1,
+                    "Offset": 0.0,
+                }
+                for signal_group in edge_signals
+            ]
+        if internal_signals:
+            palace_json_data["Boundaries"]["LumpedPort"] = [
+                {
+                    "Index": (port_i := port_i + 1),
+                    "Attributes": [
+                        physical_name_to_dimtag_map[signal][1]
+                        for signal in signal_group
+                    ],
+                    "Excitation": port == signal_group,
+                    "Direction": "+X",  # TODO infer from groudn to trace direction?
+                    "R": 50,
+                }
+                for signal_group in internal_signals
+            ]
+        # TODO regex here is hardly robust
+        port_name = re.search(r"__(.*?)___", port[0]).group(1)
+        palace_json_data["Problem"]["Output"] = f"postpro_{port_name}"
+
+        with open(
+            (json_name := simulation_folder / f"{name}_{port_name}.json"),
+            "w",
+            encoding="utf-8",
+        ) as fp:
+            json.dump(palace_json_data, fp, indent=4)
+        jsons.append(json_name)
+
+    return jsons
 
 
-def _palace(simulation_folder: Path, name: str, n_processes: int = 1):
+def _palace(
+    simulation_folder: Path, json_files: Sequence[Path | str], n_processes: int = 1
+):
     """Run simulations with Palace."""
+
+    # split processes as evenly as possible
+    quotient, remainder = divmod(n_processes, len(json_files))
+    n_processes_per_json = [quotient] * len(json_files)
+    for i in range(remainder):
+        n_processes_per_json[i] = max(
+            n_processes_per_json[i] + 1, 1
+        )  # need at least one
+
     palace = shutil.which("palace")
     if palace is None:
         raise RuntimeError("palace not found. Make sure it is available in your PATH.")
-    json_file = str(simulation_folder / f"{Path(name).stem}.json")
-    with open(simulation_folder / f"{name}_palace.log", "w", encoding="utf-8") as fp:
-        subprocess.run(
-            [palace, json_file]
-            if n_processes == 1
-            else [palace, "-np", str(n_processes), json_file],
-            cwd=simulation_folder,
-            shell=False,
-            stdout=fp,
-            stderr=fp,
-            check=True,
-        )
+    # TODO handle better than this. Ideally distributed and scheduled with @ray.remote
+    for json_file, n_processes_json in zip(json_files, n_processes_per_json):
+        # json_file = str(simulation_folder / f"{Path(name).stem}.json")
+        with open(str(json_file) + "_palace.log", "w", encoding="utf-8") as fp:
+            # TODO raise error on actual failure
+            p = subprocess.Popen(
+                [palace, str(json_file)]
+                if n_processes == 1
+                else [palace, "-np", str(n_processes_json), str(json_file)],
+                cwd=simulation_folder,
+                stdout=fp,
+                stderr=fp,
+            )
+    p.communicate()  # wait only for the last iteration
 
 
 def _read_palace_results(
     simulation_folder: Path,
     mesh_filename: str,
     n_processes: int,
-    ports: Iterable[str],
+    ports: Sequence[str],
     is_temporary: bool,
 ) -> DrivenFullWaveResults:
     """Fetch results from successful Palace simulations."""
-    scattering_matrix = read_csv(
-        simulation_folder / "postpro" / "TODO.csv", dtype=float
-    )
+    # TODO combine different matrices
+    scattering_matrix = pd.DataFrame()
+    for port in ports:
+        scattering_matrix = pd.concat(
+            [
+                scattering_matrix,
+                pd.read_csv(
+                    simulation_folder / f"postpro_{port}" / "port-S.csv", dtype=float
+                ),
+            ],
+            axis="columns",
+        )
+    scattering_matrix = (
+        scattering_matrix.T.drop_duplicates().T
+    )  # Remove duplicate freqs.
+    DrivenFullWaveResults.update_forward_refs()
     return DrivenFullWaveResults(
-        scattering_matrix=scattering_matrix, # TODO convert to SDict from DataFrame
+        scattering_matrix=scattering_matrix,  # TODO maybe convert to SDict or similar from DataFrame
         **(
             {}
             if is_temporary
             else dict(
                 mesh_location=simulation_folder / mesh_filename,
-                field_file_location=simulation_folder
-                / "postpro"
-                / "paraview"
-                / "driven"  # TODO
-                / "driven.pvd",
+                field_file_location=[
+                    simulation_folder
+                    / f"postpro_{port}"
+                    / "paraview"
+                    / "driven"
+                    / "driven.pvd"
+                    for port in ports
+                ],
             )
         ),
     )
@@ -185,6 +248,7 @@ def run_scattering_simulation_palace(
     simulation_folder: Optional[Path | str] = None,
     simulator_params: Optional[Mapping[str, Any]] = None,
     driven_settings: Optional[Mapping[str, float | int | bool]] = None,
+    adaptive_mesh_iterations: Optional[int] = None,
     mesh_parameters: Optional[Dict[str, Any]] = None,
     mesh_file: Optional[Path | str] = None,
 ) -> DrivenFullWaveResults:
@@ -212,6 +276,7 @@ def run_scattering_simulation_palace(
             the Palace config, see `Palace documentation <https://awslabs.github.io/palace/stable/config/solver/#solver[%22Linear%22]>`_
         driven_settings: Driven full-wave parameters in Palace. This will be expanded to ``solver["Driven"]`` in
             the Palace config, see `Palace documentation <https://awslabs.github.io/palace/stable/config/solver/#solver[%22Driven%22]>`_
+        adaptive_mesh_iterations: Iterations to use for adaptive meshing.
         mesh_parameters:
             Keyword arguments to provide to :func:`~Component.to_gmsh`.
         mesh_file: Path to a ready mesh to use. Useful for reusing one mesh file.
@@ -282,8 +347,6 @@ def run_scattering_simulation_palace(
 
     ground_layers |= metal_ground_surfaces
 
-    absorbing_surfaces = [] # TODO __NONE
-
     # dielectrics
     bodies = {
         k: {
@@ -300,13 +363,17 @@ def run_scattering_simulation_palace(
         gmsh.model.getPhysicalName(*dimtag): dimtag
         for dimtag in gmsh.model.getPhysicalGroups()
     }
+    absorbing_surfaces = set(
+        k for k in physical_name_to_dimtag_map.keys() if "___None" in k
+    ) - set(
+        ground_layers
+    )  # keep metal edge as PEC
+
     gmsh.finalize()
 
-    _generate_json(
+    jsons = _generate_json(
         simulation_folder,
         component.name,
-        metal_signal_surfaces_grouped, # edge
-        metal_signal_surfaces_grouped, # internal
         bodies,
         absorbing_surfaces,
         layer_stack,
@@ -315,10 +382,13 @@ def run_scattering_simulation_palace(
         physical_name_to_dimtag_map,
         metal_surfaces,
         background_tag,
+        None,  # TODO edge
+        metal_signal_surfaces_grouped,  # internal
         simulator_params,
         driven_settings,
+        adaptive_mesh_iterations,
     )
-    _palace(simulation_folder, filename, n_processes)
+    _palace(simulation_folder, jsons, n_processes)
     results = _read_palace_results(
         simulation_folder,
         filename,
@@ -368,6 +438,7 @@ if __name__ == "__main__":
         metal_layer=LAYER.WG, gap_layer=LAYER.DEEPTRENCH, enclosure_box=simulation_box
     )
     c.add_ports(cap.ports)
+    # TODO ports to sides
     substrate = gf.components.bbox(bbox=simulation_box, layer=LAYER.WAFER)
     c << substrate
     c.flatten()
@@ -375,11 +446,15 @@ if __name__ == "__main__":
     results = run_scattering_simulation_palace(
         c,
         layer_stack=layer_stack,
+        # TODO DEBUG
+        simulation_folder="/usr/local/google/home/nikosavola/dev/gdsfactory/gdsfactory/simulation/palace/tmp_dev",
         material_spec=material_spec,
+        n_processes=16,
+        adaptive_mesh_iterations=2,
         driven_settings={
-            'MinFreq': 0.1,
-            'MaxFreq': 5,
-            'FreqStep': 2,
+            "MinFreq": 0.1,
+            "MaxFreq": 5,
+            "FreqStep": 2,
             # 'AdaptiveTol': 1e-5,
         },
         mesh_parameters=dict(
@@ -411,5 +486,5 @@ if __name__ == "__main__":
     print(results)
 
     if results.field_file_location:
-        field = pv.read(results.field_file_location)
-        field.slice_orthogonal().plot(scalars="E", cmap="turbo")
+        field = pv.read(results.field_file_location[0])
+        field.slice_orthogonal().plot(scalars="Ue", cmap="turbo")
