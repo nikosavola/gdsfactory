@@ -20,22 +20,24 @@ from gdsfactory.technology import LayerStack
 from gdsfactory.typings import DrivenFullWaveResults, MaterialSpec
 
 DRIVE_JSON = "driven.json"
-DRIVEN_TEMPLATE = Path(__file__).parent / ELECTROSTATIC_JSON
+DRIVEN_TEMPLATE = Path(__file__).parent / DRIVE_JSON
 
 
 def _generate_json(
     simulation_folder: Path,
     name: str,
-    signals: Sequence[Sequence[str]],
+    edge_signals: Sequence[Sequence[str]],
+    internal_signals: Sequence[Sequence[str]],
     bodies: Dict[str, Dict[str, Any]],
-    ground_layers: Iterable[str],
+    absorbing_surfaces: Sequence[str],
     layer_stack: LayerStack,
     material_spec: MaterialSpec,
     element_order: int,
     physical_name_to_dimtag_map: Dict[str, Tuple[int, int]],
+    metal_surfaces: Sequence[str],
     background_tag: Optional[str] = None,
     simulator_params: Optional[Mapping[str, Any]] = None,
-    driven_settings: Optional[Mapping[str, float | int | bool]] = None
+    driven_settings: Optional[Mapping[str, float | int | bool]] = None,
 ):
     """Generates a json file for full-wave Palace simulations."""
     # TODO: Generalise to merger with the Elmer implementations"""
@@ -62,7 +64,7 @@ def _generate_json(
             "Permittivity": props["relative_permittivity"],
             "Permeability": props["relative_permeability"],
             "LossTan": props.get("loss_tangent", 0.),
-            "Conductivity": props.get("condcutivity", 0.),
+            "Conductivity": props.get("conductivity", 0.),
         }
         for material, props in used_materials.items()
     ]
@@ -72,41 +74,38 @@ def _generate_json(
     # ]
 
     # TODO 3d volumes as pec???, not needed for capacitance
-    palace_json_data['Boundaries']['PEC'] = {
-        # 'Attributes': [
-        #     physical_name_to_dimtag_map[pec][1] for pec in
-        #     (set(k for k, v in physical_name_to_dimtag_map.items() if v[0] == 3) - set(bodies) -
-        #      set(ground_layers))  # TODO same in Elmer??
-        # ]
-    }
     palace_json_data["Boundaries"]["PEC"] = {
-        "Attributes": [physical_name_to_dimtag_map[layer][1] for layer in ground_layers] # TODO + all metal traces etc
+        "Attributes": [physical_name_to_dimtag_map[layer][1] for layer in metal_surfaces] # TODO
     }
-    palace_json_data["Boundaries"]["WavePort"] = [
-      {
-        "Index": 1,
-        "Attributes": [5],
-        "Mode": 1,
-        "Offset": 0.0,
-        "Excitation": True
-      },
-      {
-        "Index": 2,
-        "Attributes": [6],
-        "Mode": 1,
-        "Offset": 0.0
-      },
-        # {
-        #     "Index": i,
-        #     "Attributes": [
-        #         physical_name_to_dimtag_map[signal][1] for signal in signal_group
-        #     ],
-        # }
-        # for i, signal_group in enumerate(signals, 1)
-    ]
+    port_i = 1
+    if edge_signals:
+        palace_json_data["Boundaries"]["WavePort"] = [
+        {
+            "Index": (port_i := port_i + 1),
+            "Attributes": [
+                physical_name_to_dimtag_map[signal][1] for signal in signal_group
+            ],
+            "Mode": 1,
+            "Offset": 0.0,
+            "Excitation": True
+        } for signal_group in edge_signals
+        ]
+    if internal_signals:
+        palace_json_data["Boundaries"]["LumpedPort"] = [
+        {
+            "Index": (port_i := port_i + 1),
+            "Attributes": [
+                physical_name_to_dimtag_map[signal][1] for signal in signal_group
+            ],
+            "Excitation": True,
+            "R": 50,
+        } for signal_group in internal_signals
+        ]
     # Farfield surface
     palace_json_data["Boundaries"]["Absorbing"] = {
-      "Attributes": [10], # TODO get farfield _None etc
+      "Attributes": [
+                physical_name_to_dimtag_map[e][1] for e in absorbing_surfaces
+            ], # TODO get farfield _None etc
       "Order": 1
     }
     # palace_json_data["Boundaries"]["Postprocessing"]["Dielectric"] =       [
@@ -155,20 +154,13 @@ def _read_palace_results(
     n_processes: int,
     ports: Iterable[str],
     is_temporary: bool,
-) -> ElectrostaticResults:
+) -> DrivenFullWaveResults:
     """Fetch results from successful Palace simulations."""
-    raw_capacitance_matrix = read_csv(
-        simulation_folder / "postpro" / "terminal-Cm.csv", dtype=float
-    ).values[
-        :, 1:
-    ]  # remove index
-    return ElectrostaticResults(
-        capacitance_matrix={
-            (iname, jname): raw_capacitance_matrix[i][j]
-            for (i, iname), (j, jname) in itertools.product(
-                enumerate(ports), enumerate(ports)
-            )
-        },
+    scattering_matrix = read_csv(
+        simulation_folder / "postpro" / "TODO.csv", dtype=float
+    )
+    return DrivenFullWaveResults(
+        scattering_matrix=scattering_matrix, # TODO convert to SDict from DataFrame
         **(
             {}
             if is_temporary
@@ -177,14 +169,14 @@ def _read_palace_results(
                 field_file_location=simulation_folder
                 / "postpro"
                 / "paraview"
-                / "electrostatic"
-                / "electrostatic.pvd",
+                / "driven"  # TODO
+                / "driven.pvd",
             )
         ),
     )
 
 
-def run_capacitive_simulation_palace(
+def run_scattering_simulation_palace(
     component: gf.Component,
     element_order: int = 1,
     n_processes: int = 1,
@@ -192,13 +184,13 @@ def run_capacitive_simulation_palace(
     material_spec: Optional[MaterialSpec] = None,
     simulation_folder: Optional[Path | str] = None,
     simulator_params: Optional[Mapping[str, Any]] = None,
-    driven_settings: Optional[Mapping[str, float | int | bool]] = None
+    driven_settings: Optional[Mapping[str, float | int | bool]] = None,
     mesh_parameters: Optional[Dict[str, Any]] = None,
     mesh_file: Optional[Path | str] = None,
-) -> ElectrostaticResults:
-    """Run electrostatic finite element method simulations using
+) -> DrivenFullWaveResults:
+    """Run full-wave finite element method simulations using
     `Palace`_.
-    Returns the field solution and resulting capacitance matrix.
+    Returns the field solution and resulting scattering matrix.
 
     .. note:: You should have `palace` in your PATH.
 
@@ -290,6 +282,8 @@ def run_capacitive_simulation_palace(
 
     ground_layers |= metal_ground_surfaces
 
+    absorbing_surfaces = [] # TODO __NONE
+
     # dielectrics
     bodies = {
         k: {
@@ -311,13 +305,15 @@ def run_capacitive_simulation_palace(
     _generate_json(
         simulation_folder,
         component.name,
-        metal_signal_surfaces_grouped,
+        metal_signal_surfaces_grouped, # edge
+        metal_signal_surfaces_grouped, # internal
         bodies,
-        ground_layers,
+        absorbing_surfaces,
         layer_stack,
         material_spec,
         element_order,
         physical_name_to_dimtag_map,
+        metal_surfaces,
         background_tag,
         simulator_params,
         driven_settings,
@@ -360,9 +356,9 @@ if __name__ == "__main__":
         )
     )
     material_spec = {
-        "Si": {"relative_permittivity": 11.45},
+        "Si": {"relative_permittivity": 11.45, "relative_permeability": 1},
         "Nb": {"relative_permittivity": inf},
-        "vacuum": {"relative_permittivity": 1},
+        "vacuum": {"relative_permittivity": 1, "relative_permeability": 1},
     }
 
     # Test capacitor
@@ -376,10 +372,16 @@ if __name__ == "__main__":
     c << substrate
     c.flatten()
 
-    results = run_capacitive_simulation_palace(
+    results = run_scattering_simulation_palace(
         c,
         layer_stack=layer_stack,
         material_spec=material_spec,
+        driven_settings={
+            'MinFreq': 0.1,
+            'MaxFreq': 5,
+            'FreqStep': 2,
+            # 'AdaptiveTol': 1e-5,
+        },
         mesh_parameters=dict(
             background_tag="vacuum",
             background_padding=(0,) * 5 + (700,),
