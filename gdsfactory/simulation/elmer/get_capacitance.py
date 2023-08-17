@@ -37,9 +37,10 @@ def _generate_sif(
 ):
     # pylint: disable=unused-argument
     """Generates a sif file for Elmer simulations using Jinja2."""
-    used_materials = {v.material for v in layer_stack.layers.values()} | (
-        {background_tag} if background_tag else {}
-    )
+    # Have background_tag as first s.t. unaccounted elements use it by default
+    used_materials = ({background_tag} if background_tag else {}) | {
+        v.material for v in layer_stack.layers.values()
+    }
     used_materials = {
         k: material_spec[k]
         for k in used_materials
@@ -63,7 +64,7 @@ def _elmergrid(simulation_folder: Path, name: str, n_processes: int = 1):
         )
     with open(simulation_folder / f"{name}_ElmerGrid.log", "w", encoding="utf-8") as fp:
         subprocess.run(
-            [elmergrid, "14", "2", name],
+            [elmergrid, "14", "2", name, "-autoclean"],
             cwd=simulation_folder,
             shell=False,
             stdout=fp,
@@ -334,9 +335,9 @@ if __name__ == "__main__":
         layer_stack=layer_stack,
         material_spec=material_spec,
         # DEBUG
+        n_processes=1,
         # simulator_params={'adaptive_meshing_iterations': 2},
-        simulation_folder=Path(__file__).parent / 'tmp_adapt',
-
+        simulation_folder=Path(__file__).parent / "tmp_adapt",
         mesh_parameters=dict(
             background_tag="vacuum",
             background_padding=(0,) * 5 + (700,),
