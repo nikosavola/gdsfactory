@@ -118,7 +118,6 @@ def _palace(simulation_folder: Path, name: str, n_processes: int = 1):
 def _read_palace_results(
     simulation_folder: Path,
     mesh_filename: str,
-    n_processes: int,
     ports: Iterable[str],
     is_temporary: bool,
 ) -> ElectrostaticResults:
@@ -221,6 +220,7 @@ def run_capacitive_simulation_palace(
             type="3D",
             filename=simulation_folder / filename,
             layer_stack=layer_stack,
+            n_threads=n_processes,
             gmsh_version=2.2,  # see https://mfem.org/mesh-formats/#gmsh-mesh-formats
             **(mesh_parameters or {}),
         )
@@ -288,7 +288,6 @@ def run_capacitive_simulation_palace(
     results = _read_palace_results(
         simulation_folder,
         filename,
-        n_processes,
         component.ports,
         is_temporary=str(simulation_folder) == temp_dir.name,
     )
