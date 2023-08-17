@@ -32,7 +32,7 @@ from __future__ import annotations
 import dataclasses
 import json
 import pathlib
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union, Sequence
 
 import gdstk
 import numpy as np
@@ -339,9 +339,9 @@ class ElectrostaticResults(BaseModel):
 class DrivenFullWaveResults(BaseModel):
     """Results class for driven full-wave simulations."""
 
-    scattering_matrix: SDict
+    scattering_matrix: Any  # SDict
     mesh_location: Optional[pathlib.Path] = None
-    field_file_location: Optional[pathlib.Path] = None
+    field_file_location: Optional[Sequence[pathlib.Path]] = None
 
     # TODO uncomment after move to pydantic v2
     # @computed_field

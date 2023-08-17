@@ -4,9 +4,14 @@ from typing import Any, Mapping, Optional
 
 import gdsfactory as gf
 from gdsfactory.pdk import get_sparameters_path
+
 # from gdsfactory.simulation.elmer.get_capacitance import run_scattering_simulation_elmer
 from gdsfactory.simulation.palace.get_scattering import run_scattering_simulation_palace
-from gdsfactory.typings import ComponentSpec, ElectrostaticResults
+from gdsfactory.typings import (
+    ComponentSpec,
+    DrivenFullWaveResults,
+    ElectrostaticResults,
+)
 
 
 def get_scattering(
@@ -15,7 +20,7 @@ def get_scattering(
     simulator_params: Optional[Mapping[str, Any]] = None,
     simulation_folder: Optional[Path | str] = None,
     **kwargs,
-) -> ElectrostaticResults:
+) -> DrivenFullWaveResults:
     """Simulate component with a full-wave simulation and return scattering matrix.
 
     Args:
@@ -39,7 +44,8 @@ def get_scattering(
     simulation_folder.mkdir(exist_ok=True, parents=True)
 
     match simulator:
-        # case "elmer":
+        case "elmer":
+            raise NotImplementedError("TODO")
         #     return run_scattering_simulation_elmer(
         #         component,
         #         simulation_folder=simulation_folder,
@@ -64,9 +70,8 @@ def get_scattering(
     # return dirpath / f"{component.name}_{simulation_hash}.npz"
 
 
-# get_scattering_elmer = partial(get_capacitance, tool="elmer")
-get_scattering_palace = partial(get_capacitance, tool="palace")
-
+get_scattering_elmer = partial(get_scattering, tool="elmer")
+get_scattering_palace = partial(get_scattering, tool="palace")
 
 if __name__ == "__main__":
     # TODO example

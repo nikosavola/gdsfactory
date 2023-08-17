@@ -9,6 +9,11 @@ from gdsfactory.simulation.get_capacitance import (
     get_capacitance_elmer,
     get_capacitance_palace,
 )
+from gdsfactory.simulation.get_scattering import (
+    get_scattering,
+    get_scattering_elmer,
+    get_scattering_palace,
+)
 from gdsfactory.simulation.get_sparameters_path import (
     get_sparameters_data_lumerical,
     get_sparameters_data_meep,
@@ -30,4 +35,7 @@ __all__ = [
     "get_capacitance",
     "get_capacitance_elmer",
     "get_capacitance_palace",
+    "get_scattering",
+    "get_scattering_elmer",
+    "get_scattering_palace",
 ]
