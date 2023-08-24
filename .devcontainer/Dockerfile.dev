@@ -1,3 +1,10 @@
+FROM quay.io/singularity/singularity:v3.10.4 as palace
+
+WORKDIR /src
+RUN wget https://raw.githubusercontent.com/awslabs/palace/main/singularity/singularity.def
+RUN singularity build palace.sif singularity.def
+
+
 FROM jupyter/base-notebook:python-3.10
 
 # expose klive and Jupyter Notebook ports
@@ -29,10 +36,10 @@ USER jovyan
 RUN conda init bash
 
 # Add Palace to PATH
-# RUN singularity pull ~/palace.sif oras://ghcr.io/awslabs/palace:main && \
-#     echo '#!/bin/bash' > ~/.local/bin/palace && \
-#     echo 'singularity exec ~/palace.sif /opt/palace/bin/palace "$@"' >> ~/.local/bin/palace && \
-#     chmod +x ~/.local/bin/palace
+COPY --from=build /src/palace.sif ~/palace.sif
+RUN echo '#!/bin/bash' > ~/.local/bin/palace && \
+    echo 'singularity exec ~/palace.sif /opt/palace/bin/palace "$@"' >> ~/.local/bin/palace && \
+    chmod +x ~/.local/bin/palace
 
 RUN mamba install gdspy gdstk pymeep=*=mpi_mpich_* -y && \
     mamba install -c conda-forge slepc4py=*=complex* -y
