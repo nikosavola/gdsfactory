@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import uuid
 import warnings
 from collections.abc import Callable
@@ -845,10 +846,24 @@ def round_corners(
             or length <= auto_widen_minimum_length
             or not width_wide
         ):
+            # Handle edge case of Component being provided for straight and straight_fall_back_no_taper being None
+            x_no_taper = x
+            straight_fall_back_no_taper_inner = straight_fall_back_no_taper
+            if isinstance(straight_fall_back_no_taper, Component):
+                mod = importlib.import_module(
+                    straight_fall_back_no_taper.settings.module
+                )
+                x_no_taper = CrossSection(
+                    **straight_fall_back_no_taper.settings.full["cross_section"]
+                )
+                straight_fall_back_no_taper_inner = partial(
+                    getattr(mod, straight_fall_back_no_taper.settings.function_name),
+                    **straight_fall_back_no_taper.settings.full,
+                )
             wg = gf.get_component(
-                straight_fall_back_no_taper,
+                straight_fall_back_no_taper_inner,
                 length=length,
-                cross_section=x,
+                cross_section=x_no_taper or x,
             )
         else:
             # Taper starts where straight would have started
