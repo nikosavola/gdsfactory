@@ -6,7 +6,9 @@ import numpy as np
 
 import gdsfactory as gf
 from gdsfactory.component import Component
+from gdsfactory.components.bend_euler import bend_euler
 from gdsfactory.components.extension import extend_ports
+from gdsfactory.components.straight import straight
 from gdsfactory.components.taper import taper
 from gdsfactory.components.text import text_rectangular
 from gdsfactory.typings import ComponentSpec, CrossSectionSpec, Float2
@@ -73,6 +75,9 @@ def edge_coupler_array_with_loopback(
     text: ComponentSpec | None = text_rectangular,
     text_offset: Float2 = (0, 0),
     text_rotation: float = 0,
+    bend: ComponentSpec = bend_euler,
+    straight: ComponentSpec = straight,
+    taper: ComponentSpec | None = None,
 ) -> Component:
     """Fiber array edge coupler.
 
@@ -88,6 +93,9 @@ def edge_coupler_array_with_loopback(
         text: Optional text spec.
         text_offset: x, y.
         text_rotation: text rotation in degrees.
+        bend: bend spec.
+        straight: straight spec.
+        taper: taper spec.
     """
     c = Component()
     ec = edge_coupler_array(
@@ -113,6 +121,9 @@ def edge_coupler_array_with_loopback(
     route1 = gf.routing.get_route(
         ec_ref.ports["o1"],
         ec_ref.ports["o2"],
+        bend=bend,
+        straight=straight,
+        taper=taper,
         cross_section=cross_section,
         radius=radius,
     )
@@ -122,6 +133,9 @@ def edge_coupler_array_with_loopback(
         route2 = gf.routing.get_route(
             ec_ref.ports[f"o{n-1}"],
             ec_ref.ports[f"o{n}"],
+            bend=bend,
+            straight=straight,
+            taper=taper,
             cross_section=cross_section,
             radius=radius,
         )
