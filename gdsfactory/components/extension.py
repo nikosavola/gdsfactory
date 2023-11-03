@@ -10,9 +10,16 @@ import gdsfactory as gf
 from gdsfactory.cell import cell
 from gdsfactory.component import Component
 from gdsfactory.components.mmi1x2 import mmi1x2
+from gdsfactory.components.straight import straight
 from gdsfactory.cross_section import cross_section as cross_section_function
 from gdsfactory.port import Port
-from gdsfactory.typings import ComponentSpec, Coordinate, CrossSectionSpec, Layer
+from gdsfactory.typings import (
+    ComponentFactory,
+    ComponentSpec,
+    Coordinate,
+    CrossSectionSpec,
+    Layer,
+)
 
 DEG2RAD = np.pi / 180
 
@@ -92,6 +99,7 @@ def extend_ports(
     port2: str | None = None,
     port_type: str = "optical",
     centered: bool = False,
+    straight: ComponentFactory = straight,
     cross_section: CrossSectionSpec | None = None,
     extension_port_names: list[str] | None = None,
     **kwargs,
@@ -110,6 +118,7 @@ def extend_ports(
         port2: extension output port name.
         port_type: type of the ports to extend.
         centered: if True centers rectangle at (0, 0).
+        straight: straight function.
         cross_section: extension cross_section, defaults to port cross_section
             if port has no cross_section it creates one using width and layer.
         extension_port_names: extension port names add to the new component.
@@ -161,7 +170,7 @@ def extend_ports(
                 if cross_section_extension is None:
                     raise ValueError("cross_section=None for extend_ports")
 
-                extension_component = gf.components.straight(
+                extension_component = straight(
                     length=length,
                     cross_section=cross_section_extension,
                 )
